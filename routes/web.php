@@ -14,5 +14,27 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
+
+    if (\Illuminate\Support\Facades\Auth::user()) {
+        return redirect('system');
+    }
+
     return view('welcome');
-});
+})->middleware(['auth']);
+
+Route::get('/system', 'SystemController@index')->middleware(['auth'])->name('system');
+Route::get('/tariffs/{skip?}/{count?}', 'SystemController@getTariffs');
+Route::post('/import-tariffs', 'SystemController@importTariffs');
+
+Route::get('/login', function () {
+    if (\Illuminate\Support\Facades\Auth::user()) {
+
+        return redirect('system');
+
+    }
+
+    return view('login');
+})->name('login');
+
+Route::post('/login', 'MainController@login')->middleware(['ajax']);
+Route::post('/logout', 'MainController@logout')->middleware(['ajax']);
