@@ -3,6 +3,9 @@
         <h2>
             Загрузить тарифы
         </h2>
+        <div class="alert alert-info">
+            При загрузке из файла новые тарифы полностью заменят текущие и файл с фидами для нынешней даты будет удален
+        </div>
         <form class="form mt-3 mb-3" enctype="multipart/form-data" method="post" ref="tariffForm">
 
             <div class="form-group">
@@ -33,7 +36,7 @@
 
         methods: {
 
-            async importTariffs(event) {
+            importTariffs(event) {
 
                 event.preventDefault();
 
@@ -41,7 +44,7 @@
 
                 const formData = new FormData(this.$refs.tariffForm);
 
-                const status = await axios.post('/import-tariffs', formData,
+                axios.post('/import-tariffs', formData,
                     {
                         headers: {
                             'Content-Type': 'multipart/form-data'
@@ -50,6 +53,8 @@
                 ).then(response => {
 
                     this.loading = false;
+
+                    this.$router.push('/tariffs');
 
                 }).catch(error => {
 

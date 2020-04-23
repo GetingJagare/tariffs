@@ -31,9 +31,6 @@ const router = new VueRouter({
             path: '/import-tariffs',
             component: ImportTariffs
         },
-        {
-            path: '/export-tariffs'
-        }
     ]
 });
 

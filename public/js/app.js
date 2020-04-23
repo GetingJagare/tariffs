@@ -2002,14 +2002,9 @@ __webpack_require__.r(__webpack_exports__);
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @babel/runtime/regenerator */ "./node_modules/@babel/runtime/regenerator/index.js");
-/* harmony import */ var _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0__);
-
-
-function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
-
-function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
-
+//
+//
+//
 //
 //
 //
@@ -2042,37 +2037,21 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
     importTariffs: function importTariffs(event) {
       var _this = this;
 
-      return _asyncToGenerator( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default.a.mark(function _callee() {
-        var formData, status;
-        return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default.a.wrap(function _callee$(_context) {
-          while (1) {
-            switch (_context.prev = _context.next) {
-              case 0:
-                event.preventDefault();
-                _this.loading = true;
-                formData = new FormData(_this.$refs.tariffForm);
-                _context.next = 5;
-                return axios.post('/import-tariffs', formData, {
-                  headers: {
-                    'Content-Type': 'multipart/form-data'
-                  }
-                }).then(function (response) {
-                  _this.loading = false;
-                })["catch"](function (error) {
-                  _this.loading = false;
-                  alert('Произошла ошибка импорта');
-                });
+      event.preventDefault();
+      this.loading = true;
+      var formData = new FormData(this.$refs.tariffForm);
+      axios.post('/import-tariffs', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      }).then(function (response) {
+        _this.loading = false;
 
-              case 5:
-                status = _context.sent;
-
-              case 6:
-              case "end":
-                return _context.stop();
-            }
-          }
-        }, _callee);
-      }))();
+        _this.$router.push('/tariffs');
+      })["catch"](function (error) {
+        _this.loading = false;
+        alert('Произошла ошибка импорта');
+      });
     }
   }
 });
@@ -2132,13 +2111,32 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   name: "Tariffs",
   data: function data() {
     return {
+      loading: false,
       countPerPage: 20,
       tariffs: [],
-      skip: null
+      skip: null,
+      count: 0,
+      ymlLink: null
     };
   },
   methods: {
@@ -2146,31 +2144,75 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
       var _this = this;
 
       return _asyncToGenerator( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default.a.mark(function _callee() {
+        var response, tariffs;
         return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default.a.wrap(function _callee$(_context) {
           while (1) {
             switch (_context.prev = _context.next) {
               case 0:
                 _context.next = 2;
                 return axios.get('/tariffs', {
-                  skip: _this.skip,
-                  count: _this.countPerPage
+                  params: {
+                    skip: _this.skip,
+                    count: _this.countPerPage
+                  }
                 });
 
               case 2:
-                _this.tariffs = _context.sent;
+                response = _context.sent;
+                tariffs = response.data.tariffs;
+                tariffs.forEach(function (tariff) {
+                  tariff.params = JSON.parse(tariff.params);
+                  tariff.unlimited = JSON.parse(tariff.unlimited);
+                });
+                _this.tariffs = _this.tariffs.concat(tariffs);
                 _this.skip += _this.countPerPage;
+                _this.count = response.data.count;
 
-              case 4:
+              case 8:
               case "end":
                 return _context.stop();
             }
           }
         }, _callee);
       }))();
+    },
+    exportTariffs: function exportTariffs() {
+      var _this2 = this;
+
+      this.loading = true;
+      axios.get('/export').then(function (response) {
+        _this2.loading = false;
+        _this2.ymlLink = response.data.link;
+      });
+    },
+    checkFeed: function checkFeed() {
+      var _this3 = this;
+
+      return _asyncToGenerator( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default.a.mark(function _callee2() {
+        var result;
+        return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default.a.wrap(function _callee2$(_context2) {
+          while (1) {
+            switch (_context2.prev = _context2.next) {
+              case 0:
+                _context2.next = 2;
+                return axios.get('/check-feed');
+
+              case 2:
+                result = _context2.sent;
+                _this3.ymlLink = result.data.link;
+
+              case 4:
+              case "end":
+                return _context2.stop();
+            }
+          }
+        }, _callee2);
+      }))();
     }
   },
   mounted: function mounted() {
     this.getTariffs();
+    this.checkFeed();
   }
 });
 
@@ -21368,6 +21410,12 @@ var render = function() {
     [
       _c("h2", [_vm._v("\n        Загрузить тарифы\n    ")]),
       _vm._v(" "),
+      _c("div", { staticClass: "alert alert-info" }, [
+        _vm._v(
+          "\n        При загрузке из файла новые тарифы полностью заменят текущие и файл с фидами для нынешней даты будет удален\n    "
+        )
+      ]),
+      _vm._v(" "),
       _c(
         "form",
         {
@@ -21437,50 +21485,102 @@ var render = function() {
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  return _c("div", [
-    _c(
-      "div",
-      { staticClass: "mt-3 mb-3" },
-      [
-        _c("router-link", { attrs: { to: "/import-tariffs" } }, [
-          _c("button", { staticClass: "btn btn-primary" }, [
-            _vm._v("\n                Загрузить тарифы\n            ")
-          ])
+  return _c(
+    "div",
+    [
+      _c(
+        "div",
+        { staticClass: "mt-3 mb-3" },
+        [
+          _c("router-link", { attrs: { to: "/import-tariffs" } }, [
+            _c("button", { staticClass: "btn btn-primary" }, [
+              _vm._v("\n                Загрузить тарифы\n            ")
+            ])
+          ]),
+          _vm._v(" "),
+          _c(
+            "button",
+            {
+              staticClass: "btn btn-primary",
+              on: {
+                click: function($event) {
+                  $event.preventDefault()
+                  return _vm.exportTariffs($event)
+                }
+              }
+            },
+            [_vm._v("\n            Экспорт в YML\n        ")]
+          ),
+          _vm._v(" "),
+          _vm.ymlLink
+            ? _c("div", { staticClass: "mt-3" }, [
+                _c("a", { attrs: { href: _vm.ymlLink, target: "_blank" } }, [
+                  _vm._v("Ссылка на фид")
+                ])
+              ])
+            : _vm._e()
+        ],
+        1
+      ),
+      _vm._v(" "),
+      _c("table", { staticClass: "table tariffs-table" }, [
+        _c("caption", { staticClass: "d-block" }, [
+          _vm._v("Добавленные тарифы")
         ]),
         _vm._v(" "),
-        _c("router-link", { attrs: { to: "/export-tariffs" } }, [
-          _c("button", { staticClass: "btn btn-primary" }, [
-            _vm._v("\n                Экспорт в YML\n            ")
-          ])
-        ])
-      ],
-      1
-    ),
-    _vm._v(" "),
-    _c("table", { staticClass: "table tariffs-table" }, [
-      _c("caption", { staticClass: "d-block" }, [_vm._v("Добавленные тарифы")]),
+        _vm._m(0),
+        _vm._v(" "),
+        _vm.tariffs.length === 0
+          ? _c("tr", [
+              _c("td", { attrs: { colspan: "7" } }, [_vm._v("Нет данных")])
+            ])
+          : _c(
+              "tbody",
+              _vm._l(_vm.tariffs, function(tariff) {
+                return _c("tr", [
+                  _c("td", [_vm._v(_vm._s(tariff.name))]),
+                  _vm._v(" "),
+                  _c("td", [_vm._v(_vm._s(tariff.region.name))]),
+                  _vm._v(" "),
+                  _c("td", [_vm._v(_vm._s(tariff.params.sms))]),
+                  _vm._v(" "),
+                  _c("td", [_vm._v(_vm._s(tariff.params.gb))]),
+                  _vm._v(" "),
+                  _c("td", [_vm._v(_vm._s(tariff.params.min))]),
+                  _vm._v(" "),
+                  _c("td", [_vm._v(_vm._s(tariff.price_per_day))]),
+                  _vm._v(" "),
+                  _c("td", [_vm._v(_vm._s(tariff.start_balance))])
+                ])
+              }),
+              0
+            )
+      ]),
       _vm._v(" "),
-      _vm._m(0),
-      _vm._v(" "),
-      !_vm.tariffs.length
-        ? _c("tr", [
-            _c("td", { attrs: { colspan: "3" } }, [_vm._v("Нет данных")])
+      _vm.tariffs.length < _vm.count
+        ? _c("div", { staticClass: "mt-3 text-center" }, [
+            _c(
+              "button",
+              {
+                staticClass: "btn btn-primary",
+                on: {
+                  click: function($event) {
+                    $event.preventDefault()
+                    return _vm.getTariffs($event)
+                  }
+                }
+              },
+              [_vm._v("Показать еще")]
+            )
           ])
-        : _c(
-            "tbody",
-            _vm._l(_vm.tariffs, function(tariff) {
-              return _c("tr", [
-                _c("td", [_vm._v(_vm._s(tariff.id))]),
-                _vm._v(" "),
-                _c("td", [_vm._v(_vm._s(tariff.name))]),
-                _vm._v(" "),
-                _c("td", [_vm._v(_vm._s(tariff.region.name))])
-              ])
-            }),
-            0
-          )
-    ])
-  ])
+        : _vm._e(),
+      _vm._v(" "),
+      _c("vue-element-loading", {
+        attrs: { active: _vm.loading, "is-full-screen": "", color: "#e1e1e1" }
+      })
+    ],
+    1
+  )
 }
 var staticRenderFns = [
   function() {
@@ -21488,11 +21588,19 @@ var staticRenderFns = [
     var _h = _vm.$createElement
     var _c = _vm._self._c || _h
     return _c("tr", [
-      _c("th", [_vm._v("ID")]),
-      _vm._v(" "),
       _c("th", [_vm._v("Название")]),
       _vm._v(" "),
-      _c("th", [_vm._v("Регион")])
+      _c("th", [_vm._v("Регион")]),
+      _vm._v(" "),
+      _c("th", [_vm._v("СМС")]),
+      _vm._v(" "),
+      _c("th", [_vm._v("Гб")]),
+      _vm._v(" "),
+      _c("th", [_vm._v("Минуты")]),
+      _vm._v(" "),
+      _c("th", [_vm._v("Плата за сутки")]),
+      _vm._v(" "),
+      _c("th", [_vm._v("Стартовый баланс")])
     ])
   }
 ]
@@ -36633,8 +36741,6 @@ var router = new vue_router__WEBPACK_IMPORTED_MODULE_2__["default"]({
   }, {
     path: '/import-tariffs',
     component: _components_system_ImportTariffs_vue__WEBPACK_IMPORTED_MODULE_6__["default"]
-  }, {
-    path: '/export-tariffs'
   }]
 });
 var app = new vue__WEBPACK_IMPORTED_MODULE_0___default.a({

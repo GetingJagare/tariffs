@@ -23,8 +23,10 @@ Route::get('/', function () {
 })->middleware(['auth']);
 
 Route::get('/system', 'SystemController@index')->middleware(['auth'])->name('system');
-Route::get('/tariffs/{skip?}/{count?}', 'SystemController@getTariffs');
-Route::post('/import-tariffs', 'SystemController@importTariffs');
+Route::get('/tariffs', 'SystemController@getTariffs');
+Route::post('/import-tariffs', 'SystemController@importTariffs')->middleware(['ajax']);
+Route::get('/export', 'SystemController@exportTariffs')->middleware(['ajax']);
+Route::get('/check-feed', 'SystemController@checkFeed')->middleware(['ajax']);
 
 Route::get('/login', function () {
     if (\Illuminate\Support\Facades\Auth::user()) {
