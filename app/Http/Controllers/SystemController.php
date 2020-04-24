@@ -223,7 +223,7 @@ class SystemController extends Controller
 
         foreach ($categories as $category) {
 
-            $categoryEl = $DOMDocument->createElement('category', htmlentities($category->name));
+            $categoryEl = $DOMDocument->createElement('category', htmlspecialchars($category->name));
             $categoryEl->setAttribute('id', $category->id);
             $categoriesEl->appendChild($categoryEl);
 
@@ -238,14 +238,14 @@ class SystemController extends Controller
             $offer->setAttribute('id', $tariff->id);
             $offer->setAttribute('available', 'true');
 
-            $offer->appendChild($DOMDocument->createElement('name', htmlentities($tariff->name)));
+            $offer->appendChild($DOMDocument->createElement('name', htmlspecialchars($tariff->name)));
             $offer->appendChild($DOMDocument->createElement('price', $tariff->price));
-            $offer->appendChild($DOMDocument->createElement('description', htmlentities($tariff->description)));
-            $offer->appendChild($DOMDocument->createElement('picture', htmlentities($tariff->image_link)));
+            $offer->appendChild($DOMDocument->createElement('description', htmlspecialchars($tariff->description)));
+            $offer->appendChild($DOMDocument->createElement('picture', htmlspecialchars($tariff->image_link)));
             $offer->appendChild($DOMDocument->createElement('categoryId', $tariff->category_id));
             $offer->appendChild($DOMDocument->createElement('vendor', 'Билайн'));
 
-            $regionEl = $DOMDocument->createElement('param', htmlentities($tariff->region->name));
+            $regionEl = $DOMDocument->createElement('param', htmlspecialchars($tariff->region->name));
             $regionEl->setAttribute('name', Tariffs::PARAMS_LABELS['region']);
             $offer->appendChild($regionEl);
 
