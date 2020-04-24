@@ -14,6 +14,7 @@ Vue.use(VueRouter);
 
 import Tariffs from './components/system/Tariffs.vue';
 import ImportTariffs from './components/system/ImportTariffs.vue';
+import EditTariff from './components/system/EditTariff.vue';
 
 const router = new VueRouter({
     routes: [
@@ -30,6 +31,14 @@ const router = new VueRouter({
         {
             path: '/import-tariffs',
             component: ImportTariffs
+        },
+        {
+            path: '/create-tariff',
+            component: EditTariff,
+        },
+        {
+            path: '/edit-tariff/:id',
+            component: EditTariff,
         },
     ]
 });

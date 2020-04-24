@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Categories;
 use App\Regions;
 use App\Tariffs;
 use Illuminate\Http\Request;
@@ -28,6 +29,14 @@ class SystemController extends Controller
      */
     public function getTariffs(Request $request)
     {
+        $id = $request->get('id');
+
+        if ($id){
+
+            return ['tariff' => Tariffs::where(['id' => $id])->first()->toArray()];
+
+        }
+
         $skip = $request->get('skip');
         $count = $request->get('count');
 
@@ -96,6 +105,10 @@ class SystemController extends Controller
                 $unlimitedViber = trim($sheet->getCellByColumnAndRow(10, $i)->getValue()) ?: 0;
                 $unlimitedSkype = trim($sheet->getCellByColumnAndRow(11, $i)->getValue()) ?: 0;
                 $unlimitedNetwork = trim($sheet->getCellByColumnAndRow(12, $i)->getValue()) ?: 0;
+                $categoryName = trim($sheet->getCellByColumnAndRow(13, $i)->getValue());
+                $imageLink = trim($sheet->getCellByColumnAndRow(14, $i)->getValue());
+                $price = trim($sheet->getCellByColumnAndRow(15, $i)->getValue()) ?: 0.00;
+                $description = trim($sheet->getCellByColumnAndRow(16, $i)->getValue());
 
                 $region = Regions::where(['name' => $regionName])->first();
 
@@ -105,6 +118,19 @@ class SystemController extends Controller
                     $region->name = $regionName;
                     $region->region_center = $regionCenterName;
                     $region->save();
+
+                }
+
+                if (!empty($categoryName)) {
+
+                    $category = Categories::where(['name' => $categoryName])->first();
+
+                    if (!$category) {
+
+                        $category = new Categories(['name' => $categoryName]);
+                        $category->save();
+
+                    }
 
                 }
 
@@ -120,6 +146,10 @@ class SystemController extends Controller
                     'skype' => $unlimitedSkype,
                     'network' => $unlimitedNetwork
                 ]);
+                $tariff->category_id = isset($category) ? $category->id : 0;
+                $tariff->price = $price;
+                $tariff->description = $description;
+                $tariff->image_link = $imageLink;
 
                 $tariff->save();
             } catch (\PDOException $e) {
@@ -155,18 +185,19 @@ class SystemController extends Controller
 
         }
 
-        $nowDate = date('Y_m_d');
+        $ymlFiles = glob("$ymlPath/*.xml");
 
-        $ymlFileName = "export_$nowDate.xml";
-        $ymlFilePath = "$ymlPath/$ymlFileName";
-
-        if (file_exists($ymlFilePath)) {
-
-            unlink($ymlFilePath);
-
+        foreach ($ymlFiles as $ymlFile) {
+            unlink($ymlFile);
         }
 
+        $nowTime = time();
+
+        $ymlFileName = "export_$nowTime.xml";
+        $ymlFilePath = "$ymlPath/$ymlFileName";
+
         $tariffs = Tariffs::all();
+        $categories = Categories::all();
 
         $DOMDocument = new \DOMDocument();
         $DOMDocument->version = '1.0';
@@ -187,6 +218,17 @@ class SystemController extends Controller
 
         $shop->appendChild($currencies);
 
+        $categoriesEl = $DOMDocument->createElement('categories');
+        $shop->appendChild($categoriesEl);
+
+        foreach ($categories as $category) {
+
+            $categoryEl = $DOMDocument->createElement('category', $category->name);
+            $categoryEl->setAttribute('id', $category->id);
+            $categoriesEl->appendChild($categoryEl);
+
+        }
+
         $offers = $DOMDocument->createElement('offers');
 
         /** @var Tariffs $tariff */
@@ -197,6 +239,10 @@ class SystemController extends Controller
             $offer->setAttribute('available', 'true');
 
             $offer->appendChild($DOMDocument->createElement('name', $tariff->name));
+            $offer->appendChild($DOMDocument->createElement('price', $tariff->price));
+            $offer->appendChild($DOMDocument->createElement('description', htmlspecialchars($tariff->description)));
+            $offer->appendChild($DOMDocument->createElement('picture', htmlspecialchars($tariff->image_link)));
+            $offer->appendChild($DOMDocument->createElement('categoryId', $tariff->category_id));
             $offer->appendChild($DOMDocument->createElement('vendor', 'Билайн'));
 
             $regionEl = $DOMDocument->createElement('param', $tariff->region->name);

@@ -10,10 +10,14 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @property int $id
  * @property string $name
+ * @property string $description
+ * @property string $image_link
  * @property Regions $region
  * @property int $region_id
+ * @property int $category_id
  * @property string $params
  * @property float $price_per_day
+ * @property float $price
  * @property float $start_balance
  * @property string $unlimited
  */
@@ -38,5 +42,13 @@ class Tariffs extends Model
     public function region()
     {
         return $this->belongsTo('App\Regions');
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function category()
+    {
+        return $this->belongsTo('App\Categories');
     }
 }

@@ -1,6 +1,12 @@
 <template>
     <div>
         <div class="mt-3 mb-3">
+            <router-link to="/create-tariff">
+                <button class="btn btn-primary">
+                    Добавить тариф
+                </button>
+            </router-link>
+
             <router-link to="/import-tariffs">
                 <button class="btn btn-primary">
                     Загрузить тарифы
@@ -25,6 +31,8 @@
                 <th>Минуты</th>
                 <th>Плата за сутки</th>
                 <th>Стартовый баланс</th>
+                <th></th>
+                <th></th>
             </tr>
             <tr v-if="tariffs.length === 0">
                 <td colspan="7">Нет данных</td>
@@ -38,6 +46,8 @@
                 <td>{{ tariff.params.min }}</td>
                 <td>{{ tariff.price_per_day }}</td>
                 <td>{{ tariff.start_balance}}</td>
+                <td></td>
+                <td></td>
             </tr>
             </tbody>
         </table>
