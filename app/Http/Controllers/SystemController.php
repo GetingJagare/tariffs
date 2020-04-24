@@ -240,8 +240,8 @@ class SystemController extends Controller
 
             $offer->appendChild($DOMDocument->createElement('name', htmlentities($tariff->name)));
             $offer->appendChild($DOMDocument->createElement('price', $tariff->price));
-            $offer->appendChild($DOMDocument->createElement('description', htmlentities(htmlspecialchars($tariff->description))));
-            $offer->appendChild($DOMDocument->createElement('picture', htmlentities(htmlspecialchars($tariff->image_link))));
+            $offer->appendChild($DOMDocument->createElement('description', htmlentities($tariff->description)));
+            $offer->appendChild($DOMDocument->createElement('picture', htmlentities($tariff->image_link)));
             $offer->appendChild($DOMDocument->createElement('categoryId', $tariff->category_id));
             $offer->appendChild($DOMDocument->createElement('vendor', 'Билайн'));
 
