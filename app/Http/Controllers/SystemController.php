@@ -199,6 +199,10 @@ class SystemController extends Controller
             $offer->appendChild($DOMDocument->createElement('name', $tariff->name));
             $offer->appendChild($DOMDocument->createElement('vendor', 'Билайн'));
 
+            $regionEl = $DOMDocument->createElement('param', $tariff->region->name);
+            $regionEl->setAttribute('name', Tariffs::PARAMS_LABELS['region']);
+            $offer->appendChild($regionEl);
+
             $params = json_decode($tariff->params, true);
 
             foreach ($params as $paramKey => $paramValue) {
