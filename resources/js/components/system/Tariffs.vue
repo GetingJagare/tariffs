@@ -46,8 +46,16 @@
                 <td>{{ tariff.params.min }}</td>
                 <td>{{ tariff.price_per_day }}</td>
                 <td>{{ tariff.start_balance}}</td>
-                <td></td>
-                <td></td>
+                <td>
+                    <router-link :to="'/edit-tariff/' + tariff.id" title="Редактировать тариф">
+                        <span class="fa fa-pen"></span>
+                    </router-link>
+                </td>
+                <td>
+                    <a href="#" @click.prevent="deleteTariff(tariff.id)" title="Удалить тариф">
+                        <span class="fa fa-trash"></span>
+                    </a>
+                </td>
             </tr>
             </tbody>
         </table>
@@ -61,6 +69,8 @@
 </template>
 
 <script>
+    import axios from 'axios';
+
     export default {
         name: "Tariffs",
 
@@ -104,7 +114,7 @@
                 this.loading = true;
 
                 axios.get('/export')
-                    .then (response => {
+                    .then(response => {
 
                         this.loading = false;
 
@@ -119,6 +129,44 @@
                 const result = await axios.get('/check-feed');
 
                 this.ymlLink = result.data.link;
+
+            },
+
+            deleteTariff(id) {
+
+                if (!confirm('Вы действительно хотите удалить тариф?')) {
+
+                    return;
+
+                }
+
+                this.loading = true;
+
+                axios.post('/delete-tariff', {
+                    id: id
+                }).then((response) => {
+
+                    this.loading = false;
+
+                    if (!response.data.status) {
+
+                        alert(response.data.error);
+
+                    } else {
+
+                        this.tariffs.forEach((tariff, index) => {
+
+                            if (tariff.id === id) {
+
+                                this.tariffs.splice(index, 1);
+
+                            }
+
+                        })
+
+                    }
+
+                });
 
             }
         },

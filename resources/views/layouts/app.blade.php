@@ -7,7 +7,7 @@
     <meta http-equiv=X-UA-Compatible content="IE=edge">
     <meta name=viewport content="width=device-width,initial-scale=1">
 
-    <link rel="stylesheet" href="{{ asset('/css/app.css') }}?v1.1"/>
+    <link rel="stylesheet" href="{{ asset('/css/app.css') }}?v1.2"/>
 
     <title>@yield('title')</title>
 </head>
@@ -24,7 +24,7 @@
     </div>
 </div>
 
-<script src="{{ asset('/js/app.js') }}?v1.1"></script>
+<script src="{{ asset('/js/app.js') }}?v1.2"></script>
 
 </body>
 </html>

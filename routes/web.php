@@ -25,6 +25,8 @@ Route::get('/', function () {
 Route::get('/system', 'SystemController@index')->middleware(['auth'])->name('system');
 Route::get('/tariffs', 'SystemController@getTariffs');
 Route::post('/import-tariffs', 'SystemController@importTariffs')->middleware(['ajax']);
+Route::post('/delete-tariff', 'SystemController@deleteTariff')->middleware(['ajax']);
+Route::post('/save-tariff', 'SystemController@saveTariff')->middleware(['ajax']);
 Route::get('/export', 'SystemController@exportTariffs')->middleware(['ajax']);
 Route::get('/check-feed', 'SystemController@checkFeed')->middleware(['ajax']);
 

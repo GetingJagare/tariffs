@@ -33,7 +33,13 @@ class SystemController extends Controller
 
         if ($id){
 
-            return ['tariff' => Tariffs::where(['id' => $id])->first()->toArray()];
+            /** @var Tariffs $tariff */
+            $tariff = Tariffs::where(['id' => $id])->with(['region', 'category'])->first();
+
+            $tariff->category_name = $tariff->category->name;
+            $tariff->region_name = $tariff->region->name;
+
+            return ['tariff' => $tariff->toArray()];
 
         }
 
@@ -99,14 +105,14 @@ class SystemController extends Controller
                 $min = trim($sheet->getCellByColumnAndRow(4, $i)->getValue()) ?: 0;
                 $gb = trim($sheet->getCellByColumnAndRow(5, $i)->getValue()) ?: 0;
                 $sms = trim($sheet->getCellByColumnAndRow(6, $i)->getValue()) ?: 0;
-                $price = trim($sheet->getCellByColumnAndRow(7, $i)->getValue()) ?: 0.00;
+                $pricePerDay = trim($sheet->getCellByColumnAndRow(7, $i)->getValue()) ?: 0.00;
                 $startBalance = trim($sheet->getCellByColumnAndRow(8, $i)->getValue()) ?: 0.00;
                 $unlimitedWhatsApp = trim($sheet->getCellByColumnAndRow(9, $i)->getValue()) ?: 0;
                 $unlimitedViber = trim($sheet->getCellByColumnAndRow(10, $i)->getValue()) ?: 0;
                 $unlimitedSkype = trim($sheet->getCellByColumnAndRow(11, $i)->getValue()) ?: 0;
                 $unlimitedNetwork = trim($sheet->getCellByColumnAndRow(12, $i)->getValue()) ?: 0;
                 $categoryName = trim($sheet->getCellByColumnAndRow(13, $i)->getValue());
-                $imageLink = trim($sheet->getCellByColumnAndRow(14, $i)->getValue());
+                $imageLink = str_replace(["\r\n", "\r", "\n"], "", trim($sheet->getCellByColumnAndRow(14, $i)->getValue()));
                 $price = trim($sheet->getCellByColumnAndRow(15, $i)->getValue()) ?: 0.00;
                 $description = trim($sheet->getCellByColumnAndRow(16, $i)->getValue());
 
@@ -138,7 +144,7 @@ class SystemController extends Controller
                 $tariff->name = $tariffName;
                 $tariff->region_id = $region->id;
                 $tariff->params = json_encode(['min' => $min, 'gb' => $gb, 'sms' => $sms]);
-                $tariff->price_per_day = $price;
+                $tariff->price_per_day = $pricePerDay;
                 $tariff->start_balance = $startBalance;
                 $tariff->unlimited = json_encode([
                     'whatsapp' => $unlimitedWhatsApp,
@@ -241,7 +247,7 @@ class SystemController extends Controller
             $offer->appendChild($DOMDocument->createElement('name', htmlspecialchars($tariff->name)));
             $offer->appendChild($DOMDocument->createElement('price', $tariff->price));
             $offer->appendChild($DOMDocument->createElement('description', htmlspecialchars($tariff->description)));
-            $offer->appendChild($DOMDocument->createElement('picture', htmlspecialchars($tariff->image_link)));
+            $offer->appendChild($DOMDocument->createElement('picture', htmlspecialchars(str_replace(["\r\n", "\r", "\n"], "", $tariff->image_link))));
             $offer->appendChild($DOMDocument->createElement('categoryId', $tariff->category_id));
             $offer->appendChild($DOMDocument->createElement('vendor', 'Билайн'));
 
@@ -305,6 +311,95 @@ class SystemController extends Controller
         }
 
         return ['link' => null];
+
+    }
+
+    /**
+     * @param Request $request
+     * @throws \Exception
+     * @return array
+     */
+    public function deleteTariff(Request $request)
+    {
+
+        $tariffId = $request->get('id');
+
+        if ($tariffId) {
+
+            /** @var Tariffs $tariff */
+            $tariff = Tariffs::where(['id' => $tariffId])->first();
+
+            if ($tariff) {
+                $tariff->delete();
+
+                return ['status' => 1];
+            } else {
+
+                return ['status' => 0, 'error' => "Тариф с id = $tariffId не найден"];
+
+            }
+
+        }
+
+        return ['status' => 0, 'error' => "Не задан id тарифа"];
+    }
+
+    /**
+     * @param Request $request
+     * @return array
+     */
+    public function saveTariff(Request $request)
+    {
+
+        $tariff = $request->get('tariff');
+
+        $tariff['params'] = json_encode($tariff['params']);
+
+        foreach ($tariff['unlimited'] as $key => &$value) {
+
+            $value = (int)$value;
+
+        }
+
+        $tariff['unlimited'] = json_encode($tariff['unlimited']);
+
+        $tariffEntity = $tariff['id'] ? Tariffs::where(['id' => $tariff['id']])->first() : new Tariffs();
+
+        $category = Categories::where(['name' => $tariff['category_name']])->first();
+
+        if (!$category) {
+
+            $category = new Categories(['name' => $tariff['category_name']]);
+            $category->save();
+
+        }
+
+        $tariffEntity->category_id = $category->id;
+
+        $region = Regions::where(['name' => $tariff['category_name']])->first();
+
+        if (!$region) {
+
+            $region = new Regions(['name' => $tariff['region_name']]);
+            $region->save();
+
+        }
+
+        $tariffEntity->region_id = $region->id;
+
+        $tariffEntity->fill($tariff);
+
+        try {
+
+            $tariffEntity->save();
+
+            return ['status' => 1, 'id' => $tariffEntity->id];
+
+        } catch (\PDOException $e) {
+
+            return ['status' => 0, 'error' => $e->getMessage()];
+
+        }
 
     }
 }

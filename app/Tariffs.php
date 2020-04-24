@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $description
  * @property string $image_link
  * @property Regions $region
+ * @property Categories $category
  * @property int $region_id
  * @property int $category_id
  * @property string $params
@@ -23,6 +24,8 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Tariffs extends Model
 {
+    protected $fillable = ['name', 'description', 'image_link', 'params', 'price_per_day', 'price', 'start_balance', 'unlimited'];
+
     public const PARAMS_LABELS = [
         'sms' => 'СМС',
         'gb' => 'Гб',
