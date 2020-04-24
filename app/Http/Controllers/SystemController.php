@@ -12,6 +12,9 @@ use Illuminate\Support\Facades\DB;
 use PhpOffice\PhpSpreadsheet\Exception;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Worksheet\BaseDrawing;
+use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
+use PhpOffice\PhpSpreadsheet\Worksheet\MemoryDrawing;
 
 class SystemController extends Controller
 {
@@ -96,11 +99,20 @@ class SystemController extends Controller
 
         DB::beginTransaction();
 
+        $tariffRows = [];
+
         for ($i = 3; $i <= $highestRow; $i++) {
 
             try {
                 $regionName = trim($sheet->getCellByColumnAndRow(2, $i)->getValue());
                 $regionCenterName = trim($sheet->getCellByColumnAndRow(1, $i)->getValue());
+
+                if (!$regionName || !$regionCenterName) {
+
+                    break;
+
+                }
+
                 $tariffName = trim($sheet->getCellByColumnAndRow(3, $i)->getValue());
                 $min = trim($sheet->getCellByColumnAndRow(4, $i)->getValue()) ?: 0;
                 $gb = trim($sheet->getCellByColumnAndRow(5, $i)->getValue()) ?: 0;
@@ -112,7 +124,6 @@ class SystemController extends Controller
                 $unlimitedSkype = trim($sheet->getCellByColumnAndRow(11, $i)->getValue()) ?: 0;
                 $unlimitedNetwork = trim($sheet->getCellByColumnAndRow(12, $i)->getValue()) ?: 0;
                 $categoryName = trim($sheet->getCellByColumnAndRow(13, $i)->getValue());
-                $imageLink = str_replace(["\r\n", "\r", "\n"], "", trim($sheet->getCellByColumnAndRow(14, $i)->getValue()));
                 $price = trim($sheet->getCellByColumnAndRow(15, $i)->getValue()) ?: 0.00;
                 $description = trim($sheet->getCellByColumnAndRow(16, $i)->getValue());
 
@@ -155,7 +166,6 @@ class SystemController extends Controller
                 $tariff->category_id = isset($category) ? $category->id : 0;
                 $tariff->price = $price;
                 $tariff->description = $description;
-                $tariff->image_link = $imageLink;
 
                 $tariff->save();
             } catch (\PDOException $e) {
@@ -166,11 +176,84 @@ class SystemController extends Controller
 
             }
 
+            $tariffRows[$i] = $tariff->id;
+
         }
 
-        $ymlFilePath = public_path() . "/yml/export_" . date('Y_m_d') . ".xml";
+        $imagesPath = public_path() . "/images";
 
-        if (file_exists($ymlFilePath)) {
+        if (!is_dir($imagesPath)) {
+
+            mkdir($imagesPath, 0775);
+
+        }
+
+        $tariffImages = glob("$imagesPath/*");
+
+        foreach ($tariffImages as $tariffImage) {
+
+            unlink($tariffImage);
+
+        }
+
+        $drawingCollection = $spreadsheet->getActiveSheet()->getDrawingCollection();
+
+        foreach ($drawingCollection as $drawing) {
+
+            $coords = $drawing->getCoordinates();
+
+            preg_match("/(?<row>\d+)/", $coords, $matches);
+
+            $rowNumber = (int)$matches['row'];
+
+            if ($drawing instanceof \PhpOffice\PhpSpreadsheet\Worksheet\MemoryDrawing) {
+                ob_start();
+                call_user_func(
+                    $drawing->getRenderingFunction(),
+                    $drawing->getImageResource()
+                );
+                $imageContents = ob_get_contents();
+                ob_end_clean();
+                switch ($drawing->getMimeType()) {
+                    case \PhpOffice\PhpSpreadsheet\Worksheet\MemoryDrawing::MIMETYPE_PNG :
+                        $extension = 'png';
+                        break;
+                    case \PhpOffice\PhpSpreadsheet\Worksheet\MemoryDrawing::MIMETYPE_GIF:
+                        $extension = 'gif';
+                        break;
+                    case \PhpOffice\PhpSpreadsheet\Worksheet\MemoryDrawing::MIMETYPE_JPEG :
+                        $extension = 'jpg';
+                        break;
+                }
+            } else {
+                $zipReader = fopen($drawing->getPath(),'r');
+                $imageContents = '';
+                while (!feof($zipReader)) {
+                    $imageContents .= fread($zipReader,1024);
+                }
+                fclose($zipReader);
+                $extension = $drawing->getExtension();
+            }
+
+            /** @var Tariffs $tariff */
+            $tariff = Tariffs::where(['id' => $tariffRows[$rowNumber]])->first();
+
+            $fileName = sha1($tariff->id) . ".$extension";
+            $filePath = $imagesPath . "/" . $fileName;
+            $fileUrl = env('APP_URL') . "/images/". $fileName;
+
+            file_put_contents($filePath, $imageContents);
+
+            $tariff->image_link = $fileUrl;
+            $tariff->save();
+
+        }
+
+
+
+        $ymlFilePaths = glob(public_path() . "/yml/*.xml");
+
+        foreach ($ymlFilePaths as $ymlFilePath) {
             unlink($ymlFilePath);
         }
 
