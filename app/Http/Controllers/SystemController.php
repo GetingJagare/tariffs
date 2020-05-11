@@ -280,9 +280,7 @@ class SystemController extends Controller
             unlink($ymlFile);
         }
 
-        $nowTime = time();
-
-        $ymlFileName = "export_$nowTime.xml";
+        $ymlFileName = "tariffs_export.xml";
         $ymlFilePath = "$ymlPath/$ymlFileName";
 
         $tariffs = Tariffs::all();
@@ -384,8 +382,7 @@ class SystemController extends Controller
 
     public function checkFeed(Request $request) {
 
-        $nowDate = date('Y_m_d');
-        $ymlFilePath = "/yml/export_$nowDate.xml";
+        $ymlFilePath = "/yml/tariffs_export.xml";
 
         if (file_exists(public_path() . $ymlFilePath)) {
 
