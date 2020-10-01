@@ -17,4 +17,7 @@ class TariffFieldTypes extends Model
     protected $fillable = ['name', 'alias'];
 
     public $timestamps = false;
+
+    public const TYPE_TEXT = 'text';
+    public const TYPE_CHECKBOX = 'checkbox';
 }

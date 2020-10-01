@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Categories;
 use App\Regions;
+use App\Services\TariffsExporter;
 use App\Tariffs;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
@@ -37,10 +38,7 @@ class SystemController extends Controller
         if ($id){
 
             /** @var Tariffs $tariff */
-            $tariff = Tariffs::where(['id' => $id])->with(['region', 'category', 'fieldValues'])->first();
-
-            //$tariff->category_name = $tariff->category->name;
-            //$tariff->region_name = $tariff->region->name;
+            $tariff = Tariffs::where(['id' => $id])->with(['region', 'category', 'fieldValues.field.type'])->first();
 
             return ['tariff' => $tariff->toArray()];
 
@@ -262,122 +260,11 @@ class SystemController extends Controller
         return ['status' => 1];
     }
 
-    public function exportTariffs(Request $request)
+    public function exportTariffs(Request $request, TariffsExporter $tariffsExporter)
     {
-        $publicPath = public_path();
+        $tariffsExporter->doExport();
 
-        $ymlPath = "$publicPath/yml";
-
-        if (!is_dir($ymlPath)) {
-
-            mkdir($ymlPath, 0775);
-
-        }
-
-        $ymlFiles = glob("$ymlPath/*.xml");
-
-        foreach ($ymlFiles as $ymlFile) {
-            unlink($ymlFile);
-        }
-
-        $ymlFileName = "tariffs_export.xml";
-        $ymlFilePath = "$ymlPath/$ymlFileName";
-
-        $tariffs = Tariffs::all();
-        $categories = Categories::all();
-
-        $DOMDocument = new \DOMDocument();
-        $DOMDocument->version = '1.0';
-        $DOMDocument->encoding = 'utf-8';
-        $ymlCatalog = $DOMDocument->createElement('yml_catalog');
-        $ymlCatalog->setAttribute('date', date('Y-m-d H:i'));
-
-        $DOMDocument->appendChild($ymlCatalog);
-
-        $shop = $DOMDocument->createElement('shop');
-
-        $currencies = $DOMDocument->createElement('currencies');
-
-        $currency = $DOMDocument->createElement('currency');
-        $currency->setAttribute('id', 'RUR');
-        $currency->setAttribute('rate', '1');
-        $currencies->appendChild($currency);
-
-        $shop->appendChild($currencies);
-
-        $categoriesEl = $DOMDocument->createElement('categories');
-        $shop->appendChild($categoriesEl);
-
-        foreach ($categories as $category) {
-
-            $categoryEl = $DOMDocument->createElement('category', htmlspecialchars($category->name));
-            $categoryEl->setAttribute('id', $category->id);
-            $categoriesEl->appendChild($categoryEl);
-
-        }
-
-        $offers = $DOMDocument->createElement('offers');
-
-        /** @var Tariffs $tariff */
-        foreach ($tariffs as $tariff) {
-
-            $offer = $DOMDocument->createElement('offer');
-            $offer->setAttribute('id', $tariff->id);
-            $offer->setAttribute('available', 'true');
-
-            $offer->appendChild($DOMDocument->createElement('name', htmlspecialchars($tariff->name)));
-            $offer->appendChild($DOMDocument->createElement('price', $tariff->price));
-            $offer->appendChild($DOMDocument->createElement('description', htmlspecialchars($tariff->description)));
-            $offer->appendChild($DOMDocument->createElement('picture', htmlspecialchars(str_replace(["\r\n", "\r", "\n"], "", $tariff->image_link))));
-            $offer->appendChild($DOMDocument->createElement('categoryId', $tariff->category_id));
-            $offer->appendChild($DOMDocument->createElement('vendor', 'Билайн'));
-
-            $regionEl = $DOMDocument->createElement('param', htmlspecialchars($tariff->region->name));
-            $regionEl->setAttribute('name', Tariffs::PARAMS_LABELS['region']);
-            $offer->appendChild($regionEl);
-
-            $params = json_decode($tariff->params, true);
-
-            foreach ($params as $paramKey => $paramValue) {
-
-                $paramEl = $DOMDocument->createElement('param', $paramValue);
-                $paramEl->setAttribute('name', Tariffs::PARAMS_LABELS[$paramKey]);
-                $offer->appendChild($paramEl);
-
-            }
-
-            $startBalanceEl = $DOMDocument->createElement('param', $tariff->start_balance);
-            $startBalanceEl->setAttribute('name', Tariffs::PARAMS_LABELS['start_balance']);
-            $offer->appendChild($startBalanceEl);
-
-            $startBalanceEl = $DOMDocument->createElement('param', $tariff->price_per_day);
-            $startBalanceEl->setAttribute('name', Tariffs::PARAMS_LABELS['price_per_day']);
-            $offer->appendChild($startBalanceEl);
-
-            $offers->appendChild($offer);
-
-            $unlimitedParams = json_decode($tariff->unlimited, true);
-
-            foreach ($unlimitedParams as $paramKey => $paramValue) {
-
-                if ((int)$paramValue) {
-
-                    $paramEl = $DOMDocument->createElement('param', 'Да');
-                    $paramEl->setAttribute('name', Tariffs::PARAMS_LABELS[$paramKey]);
-                    $offer->appendChild($paramEl);
-
-                }
-
-            }
-
-        }
-
-        $shop->appendChild($offers);
-        $ymlCatalog->appendChild($shop);
-
-        $DOMDocument->save($ymlFilePath);
-
-        return ['link' => env('APP_URL') . "/yml/$ymlFileName"];
+        return ['link' => env('APP_URL') . "/yml/{$tariffsExporter->getYmlFilename()}"];
     }
 
     public function checkFeed(Request $request) {
@@ -433,34 +320,24 @@ class SystemController extends Controller
 
         $tariff = $request->get('tariff');
 
-        $tariff['params'] = json_encode($tariff['params']);
-
-        foreach ($tariff['unlimited'] as $key => &$value) {
-
-            $value = (int)$value;
-
-        }
-
-        $tariff['unlimited'] = json_encode($tariff['unlimited']);
-
         $tariffEntity = $tariff['id'] ? Tariffs::where(['id' => $tariff['id']])->first() : new Tariffs();
 
-        $category = Categories::where(['name' => $tariff['category_name']])->first();
+        $category = Categories::where(['name' => $tariff['category']['name']])->first();
 
         if (!$category) {
 
-            $category = new Categories(['name' => $tariff['category_name']]);
+            $category = new Categories(['name' => $tariff['category']['name']]);
             $category->save();
 
         }
 
         $tariffEntity->category_id = $category->id;
 
-        $region = Regions::where(['name' => $tariff['category_name']])->first();
+        $region = Regions::where(['name' => $tariff['region']['name']])->first();
 
         if (!$region) {
 
-            $region = new Regions(['name' => $tariff['region_name']]);
+            $region = new Regions(['name' => $tariff['region']['name']]);
             $region->save();
 
         }

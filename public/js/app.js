@@ -2002,8 +2002,25 @@ __webpack_require__.r(__webpack_exports__);
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
-/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(axios__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @babel/runtime/regenerator */ "./node_modules/@babel/runtime/regenerator/index.js");
+/* harmony import */ var _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
+/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(axios__WEBPACK_IMPORTED_MODULE_1__);
+
+
+function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
+
+function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
+
+//
+//
+//
+//
+//
+//
+//
+//
+//
 //
 //
 //
@@ -2128,27 +2145,32 @@ __webpack_require__.r(__webpack_exports__);
   data: function data() {
     return {
       loading: false,
+      fields: {},
+      nonAttachedParams: [],
+      fieldTypes: [],
+      addingParam: false,
+      addingNewField: false,
       tariff: {
         id: null,
         name: '',
-        category_name: '',
-        region_name: '',
-        description: '',
-        params: {
-          min: '',
-          gb: '',
-          sms: ''
+        category: {
+          name: ''
         },
+        region: {
+          name: ''
+        },
+        description: '',
         image_link: '',
         price: 0,
-        price_per_day: 0,
-        start_balance: 0,
-        unlimited: {
-          whatsapp: false,
-          viber: false,
-          skype: false,
-          network: false
-        }
+        field_values: []
+      },
+      newField: {
+        name: '',
+        type: null
+      },
+      newFieldValue: {
+        field_id: null,
+        value: null
       }
     };
   },
@@ -2156,49 +2178,141 @@ __webpack_require__.r(__webpack_exports__);
     getTariff: function getTariff() {
       var _this = this;
 
-      this.loading = true;
-      axios__WEBPACK_IMPORTED_MODULE_0___default.a.get('/tariffs', {
-        params: {
-          id: this.$route.params.id
-        }
-      }).then(function (response) {
-        _this.loading = false;
-        var tariff = response.data.tariff;
-        tariff.image_link = tariff.image_link ? tariff.image_link.replace(/\r\n|\r|\n/, '') : '';
-        tariff.params = JSON.parse(tariff.params);
-        tariff.unlimited = JSON.parse(tariff.unlimited);
+      return _asyncToGenerator( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default.a.mark(function _callee() {
+        return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default.a.wrap(function _callee$(_context) {
+          while (1) {
+            switch (_context.prev = _context.next) {
+              case 0:
+                _this.loading = true;
+                axios__WEBPACK_IMPORTED_MODULE_1___default.a.get('/tariffs', {
+                  params: {
+                    id: _this.$route.params.id
+                  }
+                }).then(function (response) {
+                  var tariff = response.data.tariff;
+                  tariff.image_link = tariff.image_link ? tariff.image_link.replace(/\r\n|\r|\n/, '') : '';
+                  _this.tariff = tariff;
+                  return axios__WEBPACK_IMPORTED_MODULE_1___default.a.get('/get-fields');
+                }).then(function (response) {
+                  _this.fields = response.data;
 
-        for (var key in tariff.unlimited) {
-          tariff.unlimited[key] = tariff.unlimited[key] == '1';
-        }
+                  if (_this.tariff.field_values.length) {
+                    _this.tariff.field_values.forEach(function (field_value) {
+                      if (_this.fields.indexOf(field_value.field.id) < 0) {
+                        _this.nonAttachedParams.push({
+                          id: field_value.field.id,
+                          name: field_value.field.name
+                        });
+                      }
+                    });
+                  } else {
+                    _this.nonAttachedParams = _this.fields.slice();
+                  }
 
-        _this.tariff = tariff;
-      });
+                  _this.newFieldValue.tariffs_id = _this;
+                  return axios__WEBPACK_IMPORTED_MODULE_1___default.a.get('/get-field-types');
+                }).then(function (response) {
+                  _this.fieldTypes = response.data;
+                  _this.loading = false;
+                });
+
+              case 2:
+              case "end":
+                return _context.stop();
+            }
+          }
+        }, _callee);
+      }))();
     },
     save: function save() {
       var _this2 = this;
 
-      this.loading = true;
-      axios__WEBPACK_IMPORTED_MODULE_0___default.a.post('/save-tariff', {
-        tariff: this.tariff
-      }).then(function (response) {
-        _this2.loading = false;
+      return _asyncToGenerator( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default.a.mark(function _callee2() {
+        return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default.a.wrap(function _callee2$(_context2) {
+          while (1) {
+            switch (_context2.prev = _context2.next) {
+              case 0:
+                _this2.loading = true;
+                axios__WEBPACK_IMPORTED_MODULE_1___default.a.post('/save-tariff', {
+                  tariff: _this2.tariff
+                }).then(function (response) {
+                  _this2.loading = false;
 
-        if (!response.data.status) {
-          alert(response.data.error);
-        } else if (!_this2.tariff.id) {
-          window.scrollTo(0, 0);
-          _this2.tariff.id = response.data.id;
+                  if (!response.data.status) {
+                    alert(response.data.error);
+                  } else if (!_this2.tariff.id) {
+                    window.scrollTo(0, 0);
+                    _this2.tariff.id = response.data.id;
 
-          _this2.$router.push('/edit-tariff/' + response.data.id);
-        }
-      });
+                    _this2.$router.push('/edit-tariff/' + response.data.id);
+                  }
+                });
+
+              case 2:
+              case "end":
+                return _context2.stop();
+            }
+          }
+        }, _callee2);
+      }))();
+    },
+    addNewField: function addNewField() {
+      var _this3 = this;
+
+      return _asyncToGenerator( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default.a.mark(function _callee3() {
+        return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default.a.wrap(function _callee3$(_context3) {
+          while (1) {
+            switch (_context3.prev = _context3.next) {
+              case 0:
+                _this3.loading = true;
+                axios__WEBPACK_IMPORTED_MODULE_1___default.a.post('/add-field', {
+                  field: _this3.newField
+                }).then(function (response) {
+                  _this3.loading = false;
+
+                  if (response.data.error) {
+                    alert(response.data.error);
+                    return;
+                  }
+
+                  _this3.nonAttachedParams.push(response.data);
+
+                  _this3.newField = {
+                    name: '',
+                    type: null
+                  };
+                  _this3.newFieldValue.id = response.data.id;
+                  _this3.addingNewField = false;
+                });
+
+              case 2:
+              case "end":
+                return _context3.stop();
+            }
+          }
+        }, _callee3);
+      }))();
     }
   },
   mounted: function mounted() {
-    if (this.$route.params.id) {
-      this.getTariff();
-    }
+    var _this4 = this;
+
+    return _asyncToGenerator( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default.a.mark(function _callee4() {
+      return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default.a.wrap(function _callee4$(_context4) {
+        while (1) {
+          switch (_context4.prev = _context4.next) {
+            case 0:
+              if (_this4.$route.params.id) {
+                _this4.getTariff();
+              }
+
+            case 1:
+            case "end":
+              return _context4.stop();
+          }
+        }
+      }, _callee4);
+    }))();
   }
 });
 
@@ -2352,8 +2466,6 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
 //
 //
 //
-//
-//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   name: "Tariffs",
@@ -2389,11 +2501,6 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
               case 2:
                 response = _context.sent;
                 tariffs = response.data.tariffs;
-                /*tariffs.forEach(tariff => {
-                     tariff.params = JSON.parse(tariff.params);
-                    tariff.unlimited = JSON.parse(tariff.unlimited);
-                 });*/
-
                 _this.tariffs = _this.tariffs.concat(tariffs);
                 _this.skip += _this.countPerPage;
                 _this.count = response.data.count;
@@ -21796,19 +21903,19 @@ var render = function() {
                 {
                   name: "model",
                   rawName: "v-model",
-                  value: _vm.tariff.category_name,
-                  expression: "tariff.category_name"
+                  value: _vm.tariff.category.name,
+                  expression: "tariff.category.name"
                 }
               ],
               staticClass: "form-control",
               attrs: { required: "" },
-              domProps: { value: _vm.tariff.category_name },
+              domProps: { value: _vm.tariff.category.name },
               on: {
                 input: function($event) {
                   if ($event.target.composing) {
                     return
                   }
-                  _vm.$set(_vm.tariff, "category_name", $event.target.value)
+                  _vm.$set(_vm.tariff.category, "name", $event.target.value)
                 }
               }
             })
@@ -21822,19 +21929,19 @@ var render = function() {
                 {
                   name: "model",
                   rawName: "v-model",
-                  value: _vm.tariff.region_name,
-                  expression: "tariff.region_name"
+                  value: _vm.tariff.region.name,
+                  expression: "tariff.region.name"
                 }
               ],
               staticClass: "form-control",
               attrs: { required: "" },
-              domProps: { value: _vm.tariff.region_name },
+              domProps: { value: _vm.tariff.region.name },
               on: {
                 input: function($event) {
                   if ($event.target.composing) {
                     return
                   }
-                  _vm.$set(_vm.tariff, "region_name", $event.target.value)
+                  _vm.$set(_vm.tariff.region, "name", $event.target.value)
                 }
               }
             })
@@ -21884,81 +21991,6 @@ var render = function() {
           ]),
           _vm._v(" "),
           _c("div", { staticClass: "form-group" }, [
-            _c("label", { staticClass: "label" }, [_vm._v("Минуты")]),
-            _vm._v(" "),
-            _c("input", {
-              directives: [
-                {
-                  name: "model",
-                  rawName: "v-model",
-                  value: _vm.tariff.params.min,
-                  expression: "tariff.params.min"
-                }
-              ],
-              staticClass: "form-control",
-              domProps: { value: _vm.tariff.params.min },
-              on: {
-                input: function($event) {
-                  if ($event.target.composing) {
-                    return
-                  }
-                  _vm.$set(_vm.tariff.params, "min", $event.target.value)
-                }
-              }
-            })
-          ]),
-          _vm._v(" "),
-          _c("div", { staticClass: "form-group" }, [
-            _c("label", { staticClass: "label" }, [_vm._v("Интернет")]),
-            _vm._v(" "),
-            _c("input", {
-              directives: [
-                {
-                  name: "model",
-                  rawName: "v-model",
-                  value: _vm.tariff.params.gb,
-                  expression: "tariff.params.gb"
-                }
-              ],
-              staticClass: "form-control",
-              domProps: { value: _vm.tariff.params.gb },
-              on: {
-                input: function($event) {
-                  if ($event.target.composing) {
-                    return
-                  }
-                  _vm.$set(_vm.tariff.params, "gb", $event.target.value)
-                }
-              }
-            })
-          ]),
-          _vm._v(" "),
-          _c("div", { staticClass: "form-group" }, [
-            _c("label", { staticClass: "label" }, [_vm._v("СМС")]),
-            _vm._v(" "),
-            _c("input", {
-              directives: [
-                {
-                  name: "model",
-                  rawName: "v-model",
-                  value: _vm.tariff.params.sms,
-                  expression: "tariff.params.sms"
-                }
-              ],
-              staticClass: "form-control",
-              domProps: { value: _vm.tariff.params.sms },
-              on: {
-                input: function($event) {
-                  if ($event.target.composing) {
-                    return
-                  }
-                  _vm.$set(_vm.tariff.params, "sms", $event.target.value)
-                }
-              }
-            })
-          ]),
-          _vm._v(" "),
-          _c("div", { staticClass: "form-group" }, [
             _c("label", { staticClass: "label" }, [_vm._v("Цена")]),
             _vm._v(" "),
             _c("input", {
@@ -21984,274 +22016,387 @@ var render = function() {
             })
           ]),
           _vm._v(" "),
-          _c("div", { staticClass: "form-group" }, [
-            _c("label", { staticClass: "label" }, [
-              _vm._v("Абонентская плата за сутки")
-            ]),
-            _vm._v(" "),
-            _c("input", {
-              directives: [
-                {
-                  name: "model",
-                  rawName: "v-model",
-                  value: _vm.tariff.price_per_day,
-                  expression: "tariff.price_per_day"
-                }
-              ],
-              staticClass: "form-control",
-              domProps: { value: _vm.tariff.price_per_day },
-              on: {
-                input: function($event) {
-                  if ($event.target.composing) {
-                    return
-                  }
-                  _vm.$set(_vm.tariff, "price_per_day", $event.target.value)
-                }
-              }
-            })
-          ]),
-          _vm._v(" "),
-          _c("div", { staticClass: "form-group" }, [
-            _c("label", { staticClass: "label" }, [_vm._v("Стартовый баланс")]),
-            _vm._v(" "),
-            _c("input", {
-              directives: [
-                {
-                  name: "model",
-                  rawName: "v-model",
-                  value: _vm.tariff.start_balance,
-                  expression: "tariff.start_balance"
-                }
-              ],
-              staticClass: "form-control",
-              domProps: { value: _vm.tariff.start_balance },
-              on: {
-                input: function($event) {
-                  if ($event.target.composing) {
-                    return
-                  }
-                  _vm.$set(_vm.tariff, "start_balance", $event.target.value)
-                }
-              }
-            })
-          ]),
-          _vm._v(" "),
-          _c("div", { staticClass: "form-group" }, [
-            _c("label", { staticClass: "label" }, [_vm._v("Безлимит")]),
-            _vm._v(" "),
-            _c("div", { staticClass: "d-flex justify-content-between" }, [
-              _c("div", { staticClass: "d-flex align-items-center" }, [
-                _c("input", {
-                  directives: [
-                    {
-                      name: "model",
-                      rawName: "v-model",
-                      value: _vm.tariff.unlimited.whatsapp,
-                      expression: "tariff.unlimited.whatsapp"
-                    }
-                  ],
-                  staticClass: "form-control",
-                  attrs: { type: "checkbox", id: "unlim-whatsapp" },
-                  domProps: {
-                    checked: Array.isArray(_vm.tariff.unlimited.whatsapp)
-                      ? _vm._i(_vm.tariff.unlimited.whatsapp, null) > -1
-                      : _vm.tariff.unlimited.whatsapp
-                  },
-                  on: {
-                    change: function($event) {
-                      var $$a = _vm.tariff.unlimited.whatsapp,
-                        $$el = $event.target,
-                        $$c = $$el.checked ? true : false
-                      if (Array.isArray($$a)) {
-                        var $$v = null,
-                          $$i = _vm._i($$a, $$v)
-                        if ($$el.checked) {
-                          $$i < 0 &&
-                            _vm.$set(
-                              _vm.tariff.unlimited,
-                              "whatsapp",
-                              $$a.concat([$$v])
-                            )
-                        } else {
-                          $$i > -1 &&
-                            _vm.$set(
-                              _vm.tariff.unlimited,
-                              "whatsapp",
-                              $$a.slice(0, $$i).concat($$a.slice($$i + 1))
-                            )
-                        }
-                      } else {
-                        _vm.$set(_vm.tariff.unlimited, "whatsapp", $$c)
-                      }
-                    }
-                  }
-                }),
-                _vm._v(" "),
-                _c("label", { attrs: { for: "unlim-whatsapp" } }, [
-                  _vm._v("На WhatsApp")
-                ])
+          _vm._l(_vm.tariff.field_values, function(field_value) {
+            return _c("div", { staticClass: "form-group" }, [
+              _c("label", { staticClass: "label" }, [
+                _vm._v(
+                  "\n                " +
+                    _vm._s(field_value.field.name) +
+                    "\n                "
+                ),
+                _vm._m(0, true)
               ]),
               _vm._v(" "),
-              _c("div", { staticClass: "d-flex align-items-center" }, [
-                _c("input", {
-                  directives: [
-                    {
-                      name: "model",
-                      rawName: "v-model",
-                      value: _vm.tariff.unlimited.viber,
-                      expression: "tariff.unlimited.viber"
-                    }
-                  ],
-                  staticClass: "form-control",
-                  attrs: { type: "checkbox", id: "unlim-viber" },
-                  domProps: {
-                    checked: Array.isArray(_vm.tariff.unlimited.viber)
-                      ? _vm._i(_vm.tariff.unlimited.viber, null) > -1
-                      : _vm.tariff.unlimited.viber
-                  },
-                  on: {
-                    change: function($event) {
-                      var $$a = _vm.tariff.unlimited.viber,
-                        $$el = $event.target,
-                        $$c = $$el.checked ? true : false
-                      if (Array.isArray($$a)) {
-                        var $$v = null,
-                          $$i = _vm._i($$a, $$v)
-                        if ($$el.checked) {
-                          $$i < 0 &&
-                            _vm.$set(
-                              _vm.tariff.unlimited,
-                              "viber",
-                              $$a.concat([$$v])
-                            )
-                        } else {
-                          $$i > -1 &&
-                            _vm.$set(
-                              _vm.tariff.unlimited,
-                              "viber",
-                              $$a.slice(0, $$i).concat($$a.slice($$i + 1))
-                            )
+              field_value.field.type.alias === "text"
+                ? _c("input", {
+                    directives: [
+                      {
+                        name: "model",
+                        rawName: "v-model",
+                        value: field_value.value,
+                        expression: "field_value.value"
+                      }
+                    ],
+                    staticClass: "form-control",
+                    attrs: { type: "text" },
+                    domProps: { value: field_value.value },
+                    on: {
+                      input: function($event) {
+                        if ($event.target.composing) {
+                          return
                         }
-                      } else {
-                        _vm.$set(_vm.tariff.unlimited, "viber", $$c)
+                        _vm.$set(field_value, "value", $event.target.value)
                       }
                     }
-                  }
-                }),
-                _vm._v(" "),
-                _c("label", { attrs: { for: "unlim-viber" } }, [
-                  _vm._v("На Viber")
-                ])
-              ]),
-              _vm._v(" "),
-              _c("div", { staticClass: "d-flex align-items-center" }, [
-                _c("input", {
-                  directives: [
-                    {
-                      name: "model",
-                      rawName: "v-model",
-                      value: _vm.tariff.unlimited.skype,
-                      expression: "tariff.unlimited.skype"
-                    }
-                  ],
-                  staticClass: "form-control",
-                  attrs: { type: "checkbox", id: "unlim-skype" },
-                  domProps: {
-                    checked: Array.isArray(_vm.tariff.unlimited.skype)
-                      ? _vm._i(_vm.tariff.unlimited.skype, null) > -1
-                      : _vm.tariff.unlimited.skype
-                  },
-                  on: {
-                    change: function($event) {
-                      var $$a = _vm.tariff.unlimited.skype,
-                        $$el = $event.target,
-                        $$c = $$el.checked ? true : false
-                      if (Array.isArray($$a)) {
-                        var $$v = null,
-                          $$i = _vm._i($$a, $$v)
-                        if ($$el.checked) {
-                          $$i < 0 &&
-                            _vm.$set(
-                              _vm.tariff.unlimited,
-                              "skype",
-                              $$a.concat([$$v])
-                            )
+                  })
+                : field_value.field.type.alias === "checkbox"
+                ? _c("input", {
+                    directives: [
+                      {
+                        name: "model",
+                        rawName: "v-model",
+                        value: field_value.value,
+                        expression: "field_value.value"
+                      }
+                    ],
+                    staticClass: "form-control",
+                    attrs: { type: "checkbox" },
+                    domProps: {
+                      checked: Array.isArray(field_value.value)
+                        ? _vm._i(field_value.value, null) > -1
+                        : field_value.value
+                    },
+                    on: {
+                      change: function($event) {
+                        var $$a = field_value.value,
+                          $$el = $event.target,
+                          $$c = $$el.checked ? true : false
+                        if (Array.isArray($$a)) {
+                          var $$v = null,
+                            $$i = _vm._i($$a, $$v)
+                          if ($$el.checked) {
+                            $$i < 0 &&
+                              _vm.$set(field_value, "value", $$a.concat([$$v]))
+                          } else {
+                            $$i > -1 &&
+                              _vm.$set(
+                                field_value,
+                                "value",
+                                $$a.slice(0, $$i).concat($$a.slice($$i + 1))
+                              )
+                          }
                         } else {
-                          $$i > -1 &&
-                            _vm.$set(
-                              _vm.tariff.unlimited,
-                              "skype",
-                              $$a.slice(0, $$i).concat($$a.slice($$i + 1))
-                            )
+                          _vm.$set(field_value, "value", $$c)
                         }
-                      } else {
-                        _vm.$set(_vm.tariff.unlimited, "skype", $$c)
                       }
                     }
-                  }
-                }),
-                _vm._v(" "),
-                _c("label", { attrs: { for: "unlim-skype" } }, [
-                  _vm._v("На Skype")
-                ])
-              ]),
-              _vm._v(" "),
-              _c("div", { staticClass: "d-flex align-items-center" }, [
-                _c("input", {
-                  directives: [
-                    {
-                      name: "model",
-                      rawName: "v-model",
-                      value: _vm.tariff.unlimited.network,
-                      expression: "tariff.unlimited.network"
-                    }
-                  ],
-                  staticClass: "form-control",
-                  attrs: { type: "checkbox", id: "unlim-network" },
-                  domProps: {
-                    checked: Array.isArray(_vm.tariff.unlimited.network)
-                      ? _vm._i(_vm.tariff.unlimited.network, null) > -1
-                      : _vm.tariff.unlimited.network
-                  },
-                  on: {
-                    change: function($event) {
-                      var $$a = _vm.tariff.unlimited.network,
-                        $$el = $event.target,
-                        $$c = $$el.checked ? true : false
-                      if (Array.isArray($$a)) {
-                        var $$v = null,
-                          $$i = _vm._i($$a, $$v)
-                        if ($$el.checked) {
-                          $$i < 0 &&
-                            _vm.$set(
-                              _vm.tariff.unlimited,
-                              "network",
-                              $$a.concat([$$v])
-                            )
-                        } else {
-                          $$i > -1 &&
-                            _vm.$set(
-                              _vm.tariff.unlimited,
-                              "network",
-                              $$a.slice(0, $$i).concat($$a.slice($$i + 1))
-                            )
-                        }
-                      } else {
-                        _vm.$set(_vm.tariff.unlimited, "network", $$c)
-                      }
-                    }
-                  }
-                }),
-                _vm._v(" "),
-                _c("label", { attrs: { for: "unlim-network" } }, [
-                  _vm._v("Внутри сети")
-                ])
-              ])
+                  })
+                : _vm._e()
             ])
+          }),
+          _vm._v(" "),
+          _c("div", { staticClass: "form-group mt-4" }, [
+            _c(
+              "a",
+              {
+                attrs: { href: "#" },
+                on: {
+                  click: function($event) {
+                    $event.preventDefault()
+                    _vm.addingParam = !_vm.addingParam
+                  }
+                }
+              },
+              [
+                _vm._v(
+                  "\n                " +
+                    _vm._s(
+                      !_vm.addingParam ? "Добавить параметр" : "Скрыть форму"
+                    ) +
+                    "\n            "
+                )
+              ]
+            ),
+            _vm._v(" "),
+            _vm.addingParam
+              ? _c("div", [
+                  _c("div", [
+                    _c(
+                      "div",
+                      { staticClass: "d-flex form-group align-items-end" },
+                      [
+                        _c(
+                          "div",
+                          { staticClass: "d-flex flex-wrap mr-3 w-100" },
+                          [
+                            _c(
+                              "label",
+                              {
+                                staticStyle: {
+                                  width: "100%",
+                                  "font-weight": "700"
+                                },
+                                attrs: { for: "param-name" }
+                              },
+                              [_vm._v("Выберите параметр")]
+                            ),
+                            _vm._v(" "),
+                            _vm.nonAttachedParams.length
+                              ? _c(
+                                  "select",
+                                  {
+                                    directives: [
+                                      {
+                                        name: "model",
+                                        rawName: "v-model",
+                                        value: _vm.newFieldValue.id,
+                                        expression: "newFieldValue.id"
+                                      }
+                                    ],
+                                    staticClass: "form-control",
+                                    attrs: { id: "param-name" },
+                                    on: {
+                                      change: function($event) {
+                                        var $$selectedVal = Array.prototype.filter
+                                          .call($event.target.options, function(
+                                            o
+                                          ) {
+                                            return o.selected
+                                          })
+                                          .map(function(o) {
+                                            var val =
+                                              "_value" in o ? o._value : o.value
+                                            return val
+                                          })
+                                        _vm.$set(
+                                          _vm.newFieldValue,
+                                          "id",
+                                          $event.target.multiple
+                                            ? $$selectedVal
+                                            : $$selectedVal[0]
+                                        )
+                                      }
+                                    }
+                                  },
+                                  _vm._l(_vm.nonAttachedParams, function(
+                                    field
+                                  ) {
+                                    return _c(
+                                      "option",
+                                      { domProps: { value: field.id } },
+                                      [
+                                        _vm._v(
+                                          "\n                                    " +
+                                            _vm._s(field.name) +
+                                            "\n                                "
+                                        )
+                                      ]
+                                    )
+                                  }),
+                                  0
+                                )
+                              : _vm._e()
+                          ]
+                        ),
+                        _vm._v(" "),
+                        _c(
+                          "span",
+                          {
+                            staticClass: "btn btn-success",
+                            staticStyle: { width: "100px" },
+                            on: {
+                              click: function($event) {
+                                _vm.addingNewField = !_vm.addingNewField
+                              }
+                            }
+                          },
+                          [
+                            _vm._v(
+                              _vm._s(!_vm.addingNewField ? "+" : "-") + " Новый"
+                            )
+                          ]
+                        )
+                      ]
+                    ),
+                    _vm._v(" "),
+                    _vm.newFieldValue.id
+                      ? _c("div", { staticClass: "form-group" }, [
+                          _vm.newFieldValue.tariff_field_types_id === "text"
+                            ? _c("input", {
+                                directives: [
+                                  {
+                                    name: "model",
+                                    rawName: "v-model",
+                                    value: _vm.newFieldValue.value,
+                                    expression: "newFieldValue.value"
+                                  }
+                                ],
+                                staticClass: "form-control",
+                                attrs: { type: "text" },
+                                domProps: { value: _vm.newFieldValue.value },
+                                on: {
+                                  input: function($event) {
+                                    if ($event.target.composing) {
+                                      return
+                                    }
+                                    _vm.$set(
+                                      _vm.newFieldValue,
+                                      "value",
+                                      $event.target.value
+                                    )
+                                  }
+                                }
+                              })
+                            : _vm._e(),
+                          _vm._v(" "),
+                          _vm.newFieldValue.tariff_field_types_id === "checkbox"
+                            ? _c("input", {
+                                directives: [
+                                  {
+                                    name: "model",
+                                    rawName: "v-model",
+                                    value: _vm.newFieldValue.value,
+                                    expression: "newFieldValue.value"
+                                  }
+                                ],
+                                staticClass: "form-control",
+                                attrs: { type: "text" },
+                                domProps: { value: _vm.newFieldValue.value },
+                                on: {
+                                  input: function($event) {
+                                    if ($event.target.composing) {
+                                      return
+                                    }
+                                    _vm.$set(
+                                      _vm.newFieldValue,
+                                      "value",
+                                      $event.target.value
+                                    )
+                                  }
+                                }
+                              })
+                            : _vm._e()
+                        ])
+                      : _vm._e()
+                  ]),
+                  _vm._v(" "),
+                  _vm.addingNewField
+                    ? _c("div", { staticClass: "mt-3 pt-2 pb-2 bg-light" }, [
+                        _c("h5", [_vm._v("Новый параметр")]),
+                        _vm._v(" "),
+                        _c("div", { staticClass: "form-group" }, [
+                          _c("input", {
+                            directives: [
+                              {
+                                name: "model",
+                                rawName: "v-model",
+                                value: _vm.newField.name,
+                                expression: "newField.name"
+                              }
+                            ],
+                            staticClass: "mr-3 form-control",
+                            attrs: {
+                              type: "text",
+                              placeholder: "Название параметра"
+                            },
+                            domProps: { value: _vm.newField.name },
+                            on: {
+                              input: function($event) {
+                                if ($event.target.composing) {
+                                  return
+                                }
+                                _vm.$set(
+                                  _vm.newField,
+                                  "name",
+                                  $event.target.value
+                                )
+                              }
+                            }
+                          })
+                        ]),
+                        _vm._v(" "),
+                        _c("div", { staticClass: "form-group" }, [
+                          _c(
+                            "label",
+                            {
+                              staticStyle: { "font-weight": "700" },
+                              attrs: { for: "param-type" }
+                            },
+                            [_vm._v("Выберите тип параметра")]
+                          ),
+                          _vm._v(" "),
+                          _c(
+                            "select",
+                            {
+                              directives: [
+                                {
+                                  name: "model",
+                                  rawName: "v-model",
+                                  value: _vm.newField.type,
+                                  expression: "newField.type"
+                                }
+                              ],
+                              staticClass: "form-control",
+                              attrs: { id: "param-type" },
+                              on: {
+                                change: function($event) {
+                                  var $$selectedVal = Array.prototype.filter
+                                    .call($event.target.options, function(o) {
+                                      return o.selected
+                                    })
+                                    .map(function(o) {
+                                      var val =
+                                        "_value" in o ? o._value : o.value
+                                      return val
+                                    })
+                                  _vm.$set(
+                                    _vm.newField,
+                                    "type",
+                                    $event.target.multiple
+                                      ? $$selectedVal
+                                      : $$selectedVal[0]
+                                  )
+                                }
+                              }
+                            },
+                            _vm._l(_vm.fieldTypes, function(type) {
+                              return _c(
+                                "option",
+                                { domProps: { value: type.id } },
+                                [
+                                  _vm._v(
+                                    "\n                                " +
+                                      _vm._s(type.name) +
+                                      "\n                            "
+                                  )
+                                ]
+                              )
+                            }),
+                            0
+                          )
+                        ]),
+                        _vm._v(" "),
+                        _c(
+                          "span",
+                          {
+                            staticClass: "btn btn-success",
+                            on: { click: _vm.addNewField }
+                          },
+                          [
+                            _vm._v(
+                              "\n                        Добавить\n                    "
+                            )
+                          ]
+                        )
+                      ])
+                    : _vm._e()
+                ])
+              : _vm._e()
           ]),
           _vm._v(" "),
-          _vm._m(0)
-        ]
+          _vm._m(1)
+        ],
+        2
       ),
       _vm._v(" "),
       _c("vue-element-loading", {
@@ -22262,6 +22407,16 @@ var render = function() {
   )
 }
 var staticRenderFns = [
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c(
+      "a",
+      { staticClass: "ml-2", attrs: { href: "#", title: "Удалить параметр" } },
+      [_c("span", { staticClass: "fa fa-trash" })]
+    )
+  },
   function() {
     var _vm = this
     var _h = _vm.$createElement
@@ -22423,32 +22578,17 @@ var render = function() {
         ]),
         _vm._v(" "),
         _vm.tariffs.length
-          ? _c(
-              "tr",
-              [
-                _c("th", [_vm._v("Название")]),
-                _vm._v(" "),
-                _c("th", [_vm._v("Регион")]),
-                _vm._v(" "),
-                _vm._l(
-                  _vm.tariffs[0].field_values.slice(0, _vm.paramsLimit),
-                  function(field_value) {
-                    return _c("th", [
-                      _vm._v(
-                        "\n                " +
-                          _vm._s(field_value.field.name) +
-                          "\n            "
-                      )
-                    ])
-                  }
-                ),
-                _vm._v(" "),
-                _c("th"),
-                _vm._v(" "),
-                _c("th")
-              ],
-              2
-            )
+          ? _c("tr", [
+              _c("th", [_vm._v("Название")]),
+              _vm._v(" "),
+              _c("th", [_vm._v("Регион")]),
+              _vm._v(" "),
+              _c("th", [_vm._v("Категория")]),
+              _vm._v(" "),
+              _c("th"),
+              _vm._v(" "),
+              _c("th")
+            ])
           : _vm._e(),
         _vm._v(" "),
         _vm.tariffs.length === 0
@@ -22458,61 +22598,52 @@ var render = function() {
           : _c(
               "tbody",
               _vm._l(_vm.tariffs, function(tariff) {
-                return _c(
-                  "tr",
-                  [
-                    _c("td", [_vm._v(_vm._s(tariff.name))]),
-                    _vm._v(" "),
-                    _c("td", [_vm._v(_vm._s(tariff.region.name))]),
-                    _vm._v(" "),
-                    _vm._l(
-                      tariff.field_values.slice(0, _vm.paramsLimit),
-                      function(field_value) {
-                        return _c("td", [
-                          _vm._v(
-                            "\n                " +
-                              _vm._s(field_value.value) +
-                              "\n            "
-                          )
-                        ])
-                      }
-                    ),
-                    _vm._v(" "),
-                    _c(
-                      "td",
-                      [
-                        _c(
-                          "router-link",
-                          {
-                            attrs: {
-                              to: "/edit-tariff/" + tariff.id,
-                              title: "Редактировать тариф"
-                            }
-                          },
-                          [_c("span", { staticClass: "fa fa-pen" })]
-                        )
-                      ],
-                      1
-                    ),
-                    _vm._v(" "),
-                    _c("td", [
+                return _c("tr", [
+                  _c("td", [_vm._v(_vm._s(tariff.name))]),
+                  _vm._v(" "),
+                  _c("td", [_vm._v(_vm._s(tariff.region.name))]),
+                  _vm._v(" "),
+                  _c("td", [
+                    _vm._v(
+                      "\n                " +
+                        _vm._s(tariff.category.name) +
+                        "\n            "
+                    )
+                  ]),
+                  _vm._v(" "),
+                  _c(
+                    "td",
+                    [
                       _c(
-                        "a",
+                        "router-link",
                         {
-                          attrs: { href: "#", title: "Удалить тариф" },
-                          on: {
-                            click: function($event) {
-                              $event.preventDefault()
-                              return _vm.deleteTariff(tariff.id)
-                            }
+                          attrs: {
+                            to: "/edit-tariff/" + tariff.id,
+                            title: "Редактировать тариф"
                           }
                         },
-                        [_c("span", { staticClass: "fa fa-trash" })]
+                        [_c("span", { staticClass: "fa fa-pen" })]
                       )
-                    ])
-                  ],
-                  2
-                )
+                    ],
+                    1
+                  ),
+                  _vm._v(" "),
+                  _c("td", [
+                    _c(
+                      "a",
+                      {
+                        attrs: { href: "#", title: "Удалить тариф" },
+                        on: {
+                          click: function($event) {
+                            $event.preventDefault()
+                            return _vm.deleteTariff(tariff.id)
+                          }
+                        }
+                      },
+                      [_c("span", { staticClass: "fa fa-trash" })]
+                    )
+                  ])
+                ])
               }),
               0
             )

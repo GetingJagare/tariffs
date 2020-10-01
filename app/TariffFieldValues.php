@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property integer $tariffs_id
  * @property integer $tariff_fields_id
  * @property string $value
+ * @property TariffFields $field
  */
 class TariffFieldValues extends Model
 {

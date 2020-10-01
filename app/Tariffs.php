@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $region_id
  * @property int $category_id
  * @property float $price
+ * @property TariffFieldValues[] $fieldValues
  */
 class Tariffs extends Model
 {
@@ -44,5 +45,13 @@ class Tariffs extends Model
     public function fieldValues()
     {
         return $this->hasMany('App\TariffFieldValues');
+    }
+
+    /**
+     * @param mixed $field
+     */
+    public function addFieldValue($field)
+    {
+
     }
 }

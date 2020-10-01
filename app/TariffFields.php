@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property integer $id
  * @property string $name
  * @property integer $tariff_field_types_id
+ * @property TariffFieldTypes $type
  */
 class TariffFields extends Model
 {
@@ -23,6 +24,6 @@ class TariffFields extends Model
      */
     public function type()
     {
-        return $this->belongsTo('App\TariffFieldTypes');
+        return $this->belongsTo('App\TariffFieldTypes', 'tariff_field_types_id');
     }
 }

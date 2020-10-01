@@ -26,9 +26,7 @@
             <tr v-if="tariffs.length">
                 <th>Название</th>
                 <th>Регион</th>
-                <th v-for="field_value in tariffs[0].field_values.slice(0, paramsLimit)">
-                    {{ field_value.field.name }}
-                </th>
+                <th>Категория</th>
                 <th></th>
                 <th></th>
             </tr>
@@ -39,8 +37,8 @@
             <tr v-for="tariff in tariffs">
                 <td>{{ tariff.name }}</td>
                 <td>{{ tariff.region.name }}</td>
-                <td v-for="field_value in tariff.field_values.slice(0, paramsLimit)">
-                    {{ field_value.value }}
+                <td>
+                    {{ tariff.category.name }}
                 </td>
                 <td>
                     <router-link :to="'/edit-tariff/' + tariff.id" title="Редактировать тариф">
@@ -90,13 +88,6 @@
                 const response = await axios.get('/tariffs', {params: {skip: this.skip, count: this.countPerPage}});
 
                 const tariffs = response.data.tariffs;
-
-                /*tariffs.forEach(tariff => {
-
-                    tariff.params = JSON.parse(tariff.params);
-                    tariff.unlimited = JSON.parse(tariff.unlimited);
-
-                });*/
 
                 this.tariffs = this.tariffs.concat(tariffs);
 

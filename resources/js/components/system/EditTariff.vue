@@ -9,7 +9,7 @@
 
             <div class="form-group">
                 <label class="label">Название</label>
-                <input class="form-control" v-model="tariff.name" required />
+                <input class="form-control" v-model="tariff.name" required/>
             </div>
 
             <div class="form-group">
@@ -22,14 +22,14 @@
             <div class="form-group">
                 <label class="label">Категория</label>
 
-                <input class="form-control" v-model="tariff.category_name" required />
+                <input class="form-control" v-model="tariff.category.name" required/>
 
             </div>
 
             <div class="form-group">
                 <label class="label">Регион</label>
 
-                <input class="form-control" v-model="tariff.region_name" required />
+                <input class="form-control" v-model="tariff.region.name" required/>
 
             </div>
 
@@ -48,60 +48,69 @@
             </div>
 
             <div class="form-group">
-                <label class="label">Минуты</label>
-                <input class="form-control" v-model="tariff.params.min" />
-            </div>
-
-            <div class="form-group">
-                <label class="label">Интернет</label>
-                <input class="form-control" v-model="tariff.params.gb" />
-            </div>
-
-            <div class="form-group">
-                <label class="label">СМС</label>
-                <input class="form-control" v-model="tariff.params.sms" />
-            </div>
-
-            <div class="form-group">
                 <label class="label">Цена</label>
-                <input class="form-control" v-model="tariff.price" required />
+                <input class="form-control" v-model="tariff.price" required/>
             </div>
 
-            <div class="form-group">
-                <label class="label">Абонентская плата за сутки</label>
-                <input class="form-control" v-model="tariff.price_per_day" />
+            <div class="form-group" v-for="field_value in tariff.field_values">
+                <label class="label">
+                    {{ field_value.field.name }}
+                    <a href="#" title="Удалить параметр" class="ml-2">
+                        <span class="fa fa-trash"></span>
+                    </a>
+                </label>
+                <input class="form-control" v-model="field_value.value" v-if="field_value.field.type.alias === 'text'"
+                       type="text"/>
+                <input class="form-control" v-model="field_value.value"
+                       v-else-if="field_value.field.type.alias === 'checkbox'" type="checkbox"/>
             </div>
 
-            <div class="form-group">
-                <label class="label">Стартовый баланс</label>
-                <input class="form-control" v-model="tariff.start_balance" />
-            </div>
+            <div class="form-group mt-4">
+                <a href="#" @click="$event.preventDefault(); addingParam = !addingParam">
+                    {{ !addingParam ? 'Добавить параметр' : 'Скрыть форму' }}
+                </a>
 
-            <div class="form-group">
-                <label class="label">Безлимит</label>
+                <div v-if="addingParam">
+                    <div>
+                        <div class="d-flex form-group align-items-end">
+                            <div class="d-flex flex-wrap mr-3 w-100">
+                                <label for="param-name" style="width: 100%; font-weight: 700;">Выберите параметр</label>
+                                <select class="form-control" v-if="nonAttachedParams.length" v-model="newFieldValue.id"
+                                        id="param-name">
+                                    <option v-for="field in nonAttachedParams" :value="field.id">
+                                        {{ field.name }}
+                                    </option>
+                                </select>
+                            </div>
 
-                <div class="d-flex justify-content-between">
+                            <span class="btn btn-success" style="width: 100px;"
+                                  @click="addingNewField = !addingNewField">{{ !addingNewField ? '+' : '-' }} Новый</span>
+                        </div>
+                        <div class="form-group" v-if="newFieldValue.id">
+                            <input type="text" class="form-control" v-model="newFieldValue.value" v-if="newFieldValue.tariff_field_types_id === 'text'"/>
+                            <input type="text" class="form-control" v-model="newFieldValue.value" v-if="newFieldValue.tariff_field_types_id === 'checkbox'"/>
+                        </div>
 
-                    <div class="d-flex align-items-center">
-                        <input type="checkbox" class="form-control" v-model="tariff.unlimited.whatsapp" id="unlim-whatsapp"/>
-                        <label for="unlim-whatsapp">На WhatsApp</label>
                     </div>
 
-                    <div class="d-flex align-items-center">
-                        <input type="checkbox" class="form-control" v-model="tariff.unlimited.viber" id="unlim-viber" />
-                        <label for="unlim-viber">На Viber</label>
+                    <div v-if="addingNewField" class="mt-3 pt-2 pb-2 bg-light">
+                        <h5>Новый параметр</h5>
+                        <div class="form-group">
+                            <input type="text" class="mr-3 form-control" v-model="newField.name"
+                                   placeholder="Название параметра"/>
+                        </div>
+                        <div class="form-group">
+                            <label for="param-type" style="font-weight: 700;">Выберите тип параметра</label>
+                            <select class="form-control" v-model="newField.type" id="param-type">
+                                <option v-for="type in fieldTypes" :value="type.id">
+                                    {{ type.name }}
+                                </option>
+                            </select>
+                        </div>
+                        <span class="btn btn-success" @click="addNewField">
+                            Добавить
+                        </span>
                     </div>
-
-                    <div class="d-flex align-items-center">
-                        <input type="checkbox" class="form-control" v-model="tariff.unlimited.skype" id="unlim-skype" />
-                        <label for="unlim-skype">На Skype</label>
-                    </div>
-
-                    <div class="d-flex align-items-center">
-                        <input type="checkbox" class="form-control" v-model="tariff.unlimited.network" id="unlim-network" />
-                        <label for="unlim-network">Внутри сети</label>
-                    </div>
-
                 </div>
             </div>
 
@@ -122,32 +131,33 @@
     export default {
         name: "EditTariff",
 
-        data () {
+        data() {
 
             return {
 
                 loading: false,
+                fields: {},
+                nonAttachedParams: [],
+                fieldTypes: [],
+                addingParam: false,
+                addingNewField: false,
                 tariff: {
                     id: null,
                     name: '',
-                    category_name: '',
-                    region_name: '',
+                    category: {name: ''},
+                    region: {name: ''},
                     description: '',
-                    params: {
-                        min: '',
-                        gb: '',
-                        sms: ''
-                    },
                     image_link: '',
                     price: 0,
-                    price_per_day: 0,
-                    start_balance: 0,
-                    unlimited: {
-                        whatsapp: false,
-                        viber: false,
-                        skype: false,
-                        network: false,
-                    }
+                    field_values: []
+                },
+                newField: {
+                    name: '',
+                    type: null
+                },
+                newFieldValue: {
+                    field_id: null,
+                    value: null
                 }
 
             }
@@ -156,34 +166,54 @@
 
         methods: {
 
-            getTariff() {
+            async getTariff() {
 
                 this.loading = true;
 
                 axios.get('/tariffs', {params: {id: this.$route.params.id}})
                     .then((response) => {
 
-                        this.loading = false;
-
                         let tariff = response.data.tariff;
 
                         tariff.image_link = tariff.image_link ? tariff.image_link.replace(/\r\n|\r|\n/, '') : '';
-                        tariff.params = JSON.parse(tariff.params);
-                        tariff.unlimited = JSON.parse(tariff.unlimited);
-
-                        for (let key in tariff.unlimited) {
-
-                            tariff.unlimited[key] = tariff.unlimited[key] == '1';
-
-                        }
 
                         this.tariff = tariff;
 
-                    });
+                        return axios.get('/get-fields');
+
+                    }).then((response) => {
+
+                    this.fields = response.data;
+
+                    if (this.tariff.field_values.length) {
+                        this.tariff.field_values.forEach((field_value) => {
+
+                            if (this.fields.indexOf(field_value.field.id) < 0) {
+                                this.nonAttachedParams.push({id: field_value.field.id, name: field_value.field.name});
+                            }
+
+                        });
+                    } else {
+
+                        this.nonAttachedParams = this.fields.slice();
+
+                    }
+
+                    this.newFieldValue.tariffs_id = this
+
+                    return axios.get('/get-field-types');
+
+                }).then((response) => {
+
+                    this.fieldTypes = response.data;
+
+                    this.loading = false;
+
+                });
 
             },
 
-            save() {
+            async save() {
 
                 this.loading = true;
 
@@ -208,11 +238,39 @@
 
                     });
 
+            },
+
+            async addNewField() {
+
+                this.loading = true;
+
+                axios.post('/add-field', {field: this.newField})
+                    .then((response) => {
+
+                        this.loading = false;
+
+                        if (response.data.error) {
+
+                            alert(response.data.error);
+
+                            return;
+
+                        }
+
+                        this.nonAttachedParams.push(response.data);
+
+                        this.newField = {name: '', type: null};
+                        this.newFieldValue.id = response.data.id;
+
+                        this.addingNewField = false;
+
+                    });
+
             }
 
         },
 
-        mounted() {
+        async mounted() {
 
             if (this.$route.params.id) {
 
