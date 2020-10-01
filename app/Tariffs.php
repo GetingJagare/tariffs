@@ -54,4 +54,12 @@ class Tariffs extends Model
     {
         return $this->belongsTo('App\Categories');
     }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function fields()
+    {
+        return $this->hasMany('App\TariffFieldValues');
+    }
 }
