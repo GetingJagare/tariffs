@@ -23,14 +23,12 @@
         </div>
         <table class="table tariffs-table">
             <caption class="d-block">Добавленные тарифы</caption>
-            <tr>
+            <tr v-if="tariffs.length">
                 <th>Название</th>
                 <th>Регион</th>
-                <th>СМС</th>
-                <th>Гб</th>
-                <th>Минуты</th>
-                <th>Плата за сутки</th>
-                <th>Стартовый баланс</th>
+                <th v-for="field_value in tariffs[0].field_values.slice(0, paramsLimit)">
+                    {{ field_value.field.name }}
+                </th>
                 <th></th>
                 <th></th>
             </tr>
@@ -41,11 +39,9 @@
             <tr v-for="tariff in tariffs">
                 <td>{{ tariff.name }}</td>
                 <td>{{ tariff.region.name }}</td>
-                <td>{{ tariff.params.sms }}</td>
-                <td>{{ tariff.params.gb }}</td>
-                <td>{{ tariff.params.min }}</td>
-                <td>{{ tariff.price_per_day }}</td>
-                <td>{{ tariff.start_balance}}</td>
+                <td v-for="field_value in tariff.field_values.slice(0, paramsLimit)">
+                    {{ field_value.value }}
+                </td>
                 <td>
                     <router-link :to="'/edit-tariff/' + tariff.id" title="Редактировать тариф">
                         <span class="fa fa-pen"></span>
@@ -83,6 +79,7 @@
                 skip: null,
                 count: 0,
                 ymlLink: null,
+                paramsLimit: 5
             }
 
         },
@@ -94,12 +91,12 @@
 
                 const tariffs = response.data.tariffs;
 
-                tariffs.forEach(tariff => {
+                /*tariffs.forEach(tariff => {
 
                     tariff.params = JSON.parse(tariff.params);
                     tariff.unlimited = JSON.parse(tariff.unlimited);
 
-                });
+                });*/
 
                 this.tariffs = this.tariffs.concat(tariffs);
 

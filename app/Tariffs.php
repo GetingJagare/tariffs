@@ -41,7 +41,7 @@ class Tariffs extends Model
     /**
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
-    public function fields()
+    public function fieldValues()
     {
         return $this->hasMany('App\TariffFieldValues');
     }

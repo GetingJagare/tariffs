@@ -10,11 +10,11 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @property integer $id
  * @property string $name
- * @property integer $type_id
+ * @property integer $tariff_field_types_id
  */
 class TariffFields extends Model
 {
-    protected $fillable = ['name', 'type_id'];
+    protected $fillable = ['name', 'tariff_field_types_id'];
 
     public $timestamps = false;
 

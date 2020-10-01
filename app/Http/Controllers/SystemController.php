@@ -37,10 +37,10 @@ class SystemController extends Controller
         if ($id){
 
             /** @var Tariffs $tariff */
-            $tariff = Tariffs::where(['id' => $id])->with(['region', 'category'])->first();
+            $tariff = Tariffs::where(['id' => $id])->with(['region', 'category', 'fieldValues'])->first();
 
-            $tariff->category_name = $tariff->category->name;
-            $tariff->region_name = $tariff->region->name;
+            //$tariff->category_name = $tariff->category->name;
+            //$tariff->region_name = $tariff->region->name;
 
             return ['tariff' => $tariff->toArray()];
 
@@ -49,7 +49,7 @@ class SystemController extends Controller
         $skip = $request->get('skip');
         $count = $request->get('count');
 
-        $tariffs = Tariffs::query()->with('region');
+        $tariffs = Tariffs::query()->with(['region', 'category', 'fieldValues.field']);
         $tariffsCount = $tariffs->count();
 
         if ($skip) {

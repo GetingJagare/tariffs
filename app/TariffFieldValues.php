@@ -9,13 +9,13 @@ use Illuminate\Database\Eloquent\Model;
  * @package App
  *
  * @property integer $id
- * @property integer $field_id
- * @property integer $tariff_id
+ * @property integer $tariffs_id
+ * @property integer $tariff_fields_id
  * @property string $value
  */
 class TariffFieldValues extends Model
 {
-    protected $fillable = ['field_id', 'tariff_id', 'value'];
+    protected $fillable = ['tariffs_id', 'tariff_fields_id', 'value'];
 
     public $timestamps = false;
 
@@ -24,6 +24,6 @@ class TariffFieldValues extends Model
      */
     public function field()
     {
-        return $this->belongsTo('App\TariffFields');
+        return $this->belongsTo('App\TariffFields', 'tariff_fields_id');
     }
 }
