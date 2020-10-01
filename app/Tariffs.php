@@ -36,7 +36,6 @@ class Tariffs extends Model
         'viber' => 'Безлимит на Viber',
         'skype' => 'Безлимит на Skype',
         'network' => 'Безлимит внутри сети',
-        'region' => 'Регион'
     ];
 
     /**
