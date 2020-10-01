@@ -16,7 +16,7 @@ class CreateTariffFieldsTable extends Migration
         Schema::create('tariff_fields', function (Blueprint $table) {
             $table->id();
             $table->addColumn('string', 'name', ['length' => 255])->nullable(false);
-            $table->integer('type');
+            $table->integer('type_id');
         });
     }
 
