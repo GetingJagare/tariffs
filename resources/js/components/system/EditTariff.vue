@@ -191,6 +191,8 @@
 
                         this.tariff = tariff;
 
+                        this.getData();
+
                     });
 
             },
@@ -355,9 +357,9 @@
 
                 this.getTariff();
 
+            } else {
+                this.getData();
             }
-
-            this.getData();
 
         },
 
