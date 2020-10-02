@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\TariffFields;
 use App\TariffFieldTypes;
+use App\TariffFieldValues;
 use Illuminate\Http\Request;
 
 /**
@@ -47,8 +48,42 @@ class FieldController extends Controller
         return TariffFields::where(['id' => $newField->id])->with(['type'])->first()->toArray();
     }
 
-    public function deleteField(Request $request)
+    public function deleteFieldValue(Request $request)
     {
+
+        try {
+
+            $fieldValueId = $request->post('field_value_id');
+            TariffFieldValues::where(['id' => $fieldValueId])->delete();
+
+        } catch (\PDOException $e) {
+
+            return ['error' => $e->getMessage()];
+
+        }
+
+        return ['status' => 1];
+
+    }
+
+    public function addFieldValue(Request $request)
+    {
+
+        try {
+
+            $fieldValueData = $request->post('field_value');
+
+            $fieldValue = new TariffFieldValues();
+            $fieldValue->fill($fieldValueData);
+            $fieldValue->save();
+
+            return ['status' => 1, 'id' => $fieldValue->id];
+
+        } catch (\PDOException $e) {
+
+            return ['error' => $e->getMessage()];
+
+        }
 
     }
 }

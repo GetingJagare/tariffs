@@ -52,10 +52,10 @@
                 <input class="form-control" v-model="tariff.price" required/>
             </div>
 
-            <div class="form-group" v-for="field_value in tariff.field_values">
+            <div class="form-group" v-for="(field_value, f_index) in tariff.field_values">
                 <label class="label">
                     {{ field_value.field.name }}
-                    <a href="#" title="Удалить параметр" class="ml-2">
+                    <a href="#" title="Удалить параметр" class="ml-2" @click.prevent="deleteFieldValue(field_value, f_index)">
                         <span class="fa fa-trash"></span>
                     </a>
                 </label>
@@ -75,7 +75,8 @@
                         <div class="d-flex form-group align-items-end">
                             <div class="d-flex flex-wrap mr-3 w-100">
                                 <label for="param-name" style="width: 100%; font-weight: 700;">Выберите параметр</label>
-                                <select class="form-control" v-if="nonAttachedParams.length" v-model="newFieldValue.id"
+                                <select class="form-control" v-if="nonAttachedParams.length"
+                                        v-model="newFieldValue.tariff_fields_id"
                                         id="param-name">
                                     <option v-for="field in nonAttachedParams" :value="field.id">
                                         {{ field.name }}
@@ -86,9 +87,17 @@
                             <span class="btn btn-success" style="width: 100px;"
                                   @click="addingNewField = !addingNewField">{{ !addingNewField ? '+' : '-' }} Новый</span>
                         </div>
-                        <div class="form-group" v-if="newFieldValue.id">
-                            <input type="text" class="form-control" v-model="newFieldValue.value" v-if="newFieldValue.tariff_field_types_id === 'text'"/>
-                            <input type="text" class="form-control" v-model="newFieldValue.value" v-if="newFieldValue.tariff_field_types_id === 'checkbox'"/>
+                        <div class="form-group d-flex" v-if="newFieldValue.field.type.alias">
+                            <input type="text" class="form-control mr-3" v-model="newFieldValue.value"
+                                   v-if="newFieldValue.field.type.alias === 'text'"
+                                   placeholder="Введите значение"/>
+                            <div class="mr-3 w-100 d-flex align-items-center" v-if="newFieldValue.field.type.alias === 'checkbox'">
+                                <input type="checkbox" class="form-control mr-3" v-model="newFieldValue.value"
+                                       id="param-checkbox"/>
+                                <label class="mr-2">Да</label>
+                            </div>
+
+                            <span class="btn btn-success" @click="addFieldValue">Сохранить</span>
                         </div>
 
                     </div>
@@ -136,7 +145,6 @@
             return {
 
                 loading: false,
-                fields: {},
                 nonAttachedParams: [],
                 fieldTypes: [],
                 addingParam: false,
@@ -156,8 +164,12 @@
                     type: null
                 },
                 newFieldValue: {
-                    field_id: null,
-                    value: null
+                    tariff_fields_id: null,
+                    value: null,
+                    field: {
+                        name: '',
+                        type: {alias: ''},
+                    }
                 }
 
             }
@@ -179,31 +191,40 @@
 
                         this.tariff = tariff;
 
-                        return axios.get('/get-fields');
+                    });
+
+            },
+
+            async getData() {
+
+                this.nonAttachedParams.splice(0);
+
+                axios.get('/get-fields')
+                    .then((response) => {
+
+                        if (this.tariff.field_values.length) {
+                            response.data.forEach((field) => {
+
+                                for (let i = 0; i < this.tariff.field_values.length; i++) {
+
+                                    if (this.tariff.field_values[i].field.id === field.id) {
+                                        break;
+                                    } else if (i === this.tariff.field_values.length - 1) {
+                                        this.nonAttachedParams.push(field);
+                                    }
+
+                                }
+
+                            });
+                        } else {
+
+                            this.nonAttachedParams = response.data.slice();
+
+                        }
+
+                        return axios.get('/get-field-types');
 
                     }).then((response) => {
-
-                    this.fields = response.data;
-
-                    if (this.tariff.field_values.length) {
-                        this.tariff.field_values.forEach((field_value) => {
-
-                            if (this.fields.indexOf(field_value.field.id) < 0) {
-                                this.nonAttachedParams.push({id: field_value.field.id, name: field_value.field.name});
-                            }
-
-                        });
-                    } else {
-
-                        this.nonAttachedParams = this.fields.slice();
-
-                    }
-
-                    this.newFieldValue.tariffs_id = this
-
-                    return axios.get('/get-field-types');
-
-                }).then((response) => {
 
                     this.fieldTypes = response.data;
 
@@ -232,9 +253,12 @@
 
                             this.tariff.id = response.data.id;
 
-                            this.$router.push('/edit-tariff/' + response.data.id);
+                            this.$router.push(`/edit-tariff/${response.data.id}`);
 
                         }
+
+                        this.$forceUpdate();
+                        this.getData();
 
                     });
 
@@ -260,11 +284,66 @@
                         this.nonAttachedParams.push(response.data);
 
                         this.newField = {name: '', type: null};
-                        this.newFieldValue.id = response.data.id;
+                        this.newFieldValue.tariff_fields_id = response.data.id;
 
                         this.addingNewField = false;
 
                     });
+
+            },
+
+            async addFieldValue() {
+
+                let fieldValueData = Object.assign({}, JSON.parse(JSON.stringify(this.newFieldValue)), {tariffs_id: this.tariff.id});
+
+                if (this.tariff.id) {
+                    this.loading = true;
+
+                    axios.post('/add-field-value', {field_value: fieldValueData})
+                        .then((response) => {
+
+                            fieldValueData.id = response.data.id;
+
+                            this.tariff.field_values.push(fieldValueData);
+
+                            this.addingNewField = false;
+
+                            this.newFieldValue.field.type.alias = '';
+                            this.newFieldValue.field.name = '';
+
+                            this.loading = false;
+
+                        });
+                } else {
+                    this.tariff.field_values.push(fieldValueData);
+
+                    this.addingNewField = false;
+
+                    this.newFieldValue.field.type.alias = '';
+                    this.newFieldValue.field.name = '';
+                }
+
+            },
+
+            async deleteFieldValue(fieldValue, index) {
+
+                if (fieldValue.id) {
+
+                  this.loading = true;
+
+                  axios.post('/delete-field-value', {field_value_id: fieldValue.id})
+                      .then((response) => {
+
+                          this.loading = false;
+                          this.tariff.field_values.splice(index, 1);
+
+                      });
+
+                } else {
+
+                    this.tariff.field_values.splice(index, 1);
+
+                }
 
             }
 
@@ -278,6 +357,34 @@
 
             }
 
+            this.getData();
+
+        },
+
+        watch: {
+            'newFieldValue.tariff_fields_id': function (value) {
+
+                this.newFieldValue.value = null;
+
+                if (value) {
+                    this.addingNewField = false;
+
+                    this.nonAttachedParams.forEach((param) => {
+
+                        if (param.id === value) {
+
+                            this.newFieldValue.field.type.alias = param.type.alias;
+                            this.newFieldValue.field.name = param.name;
+
+                        }
+
+                    });
+                } else {
+                    this.newFieldValue.field.type.alias = '';
+                    this.newFieldValue.field.name = '';
+                }
+
+            }
         }
     }
 </script>

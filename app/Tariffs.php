@@ -46,12 +46,4 @@ class Tariffs extends Model
     {
         return $this->hasMany('App\TariffFieldValues');
     }
-
-    /**
-     * @param mixed $field
-     */
-    public function addFieldValue($field)
-    {
-
-    }
 }

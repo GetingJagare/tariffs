@@ -30,6 +30,8 @@ Route::middleware(['ajax'])->group(function () {
     Route::get('/tariffs', 'SystemController@getTariffs');
 
     Route::post('/add-field', 'FieldController@addField');
+    Route::post('/delete-field-value', 'FieldController@deleteFieldValue');
+    Route::post('/add-field-value', 'FieldController@addFieldValue');
 });
 
 
