@@ -7,11 +7,11 @@
                 </button>
             </router-link>
 
-            <router-link to="/import-tariffs">
+            <!--<router-link to="/import-tariffs">
                 <button class="btn btn-primary">
                     Загрузить тарифы
                 </button>
-            </router-link>
+            </router-link>-->
 
             <button class="btn btn-primary" @click.prevent="exportTariffs">
                 Экспорт в YML
